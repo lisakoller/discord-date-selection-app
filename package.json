@@ -1,0 +1,28 @@
+{
+  "name": "date-selection-app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "discord.js": "^12.5.1",
+    "discord.js-collector": "^1.8.7",
+    "dotenv": "^8.2.0",
+    "moment": "^2.29.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://gitlab.com/personal-koller/discord-date-selection-app.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://gitlab.com/personal-koller/discord-date-selection-app/issues"
+  },
+  "homepage": "https://gitlab.com/personal-koller/discord-date-selection-app#readme"
+}
