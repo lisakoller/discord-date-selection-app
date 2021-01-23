@@ -5,7 +5,6 @@ const nextMonday = getNextMonday()
 
 function getNextMonday() {
   const dayINeed = 1
-  return moment().add(1, 'weeks').isoWeekday(dayINeed)
 
   // if we haven’t yet passed the day of the week that I need:
   if (moment().isoWeekday() <= dayINeed) {
@@ -82,7 +81,7 @@ const basicEmbed = {
   },*/
   timestamp: new Date(),
   footer: {
-    text: 'Erstellt am: ',
+    text: 'Version 1.0',
     //icon_url: 'https://i.imgur.com/wSTFkRM.png',
   },
 }
@@ -105,38 +104,9 @@ function addUser(value, user) {
   }
 }
 
-function removeUser(value, user, sentMessage) {
-  //console.log(typeof value)
+function removeUser(value, user) {
   let newValue = value.replace(`<@${user.id}>`, '')
   return newValue.length === 0 ? '-' : newValue
-  
-  /*const listOfUsers = value.trim()
-    .replace(/[<>]/g, '')
-    .split('@')
-    .filter((e) => e.length !== 0)
-  if (listOfUsers.length === 0) {
-    return value
-  }
-
-  //console.log(sentMessage.guild.members.cache.get("802091512573722654"))
-  //console.log(sentMessage.guild.member("802091512573722654").user)  // working
-
-  if (listOfUsers.includes(user.id)) {
-    console.log(`removing user ${user} from ${value}`)
-    let listOfUsersUpdated = listOfUsers.filter((e) => e !== user.id)
-    value = listOfUsersUpdated
-      .map((userID) => {
-        //return `${sentMessage.guild.member(userID).then(member => console.log(member.user))}\n` // not working
-        //`<@${userID}>` // not working
-        //return sentMessage.guild.member("802091512573722654") // working
-        return 'TODO'
-      })
-      .join('')
-    return value.length !== 0 ? value : '-'
-  } else {
-    console.log(`removing user ${user} not needed`)
-    return value
-  }*/
 }
 
 function getTopAnswer(sentMessage) {
@@ -297,25 +267,25 @@ module.exports = {
               o.value = getTopAnswer(sentMessage)
               break
             case index === 2 && reaction.emoji.name === '🌙':
-              o.value = removeUser(o.value, user, sentMessage)
+              o.value = removeUser(o.value, user)
               break
             case index === 3 && reaction.emoji.name === '🔥':
-              o.value = removeUser(o.value, user, sentMessage)
+              o.value = removeUser(o.value, user)
               break
             case index === 4 && reaction.emoji.name === '💧':
-              o.value = removeUser(o.value, user, sentMessage)
+              o.value = removeUser(o.value, user)
               break
             case index === 5 && reaction.emoji.name === '🌳':
-              o.value = removeUser(o.value, user, sentMessage)
+              o.value = removeUser(o.value, user)
               break
             case index === 6 && reaction.emoji.name === '💰':
-              o.value = removeUser(o.value, user, sentMessage)
+              o.value = removeUser(o.value, user)
               break
             case index === 7 && reaction.emoji.name === '⛰':
-              o.value = removeUser(o.value, user, sentMessage)
+              o.value = removeUser(o.value, user)
               break
             case index === 8 && reaction.emoji.name === '☀':
-              o.value = removeUser(o.value, user, sentMessage)
+              o.value = removeUser(o.value, user)
               break
           }
           return o
