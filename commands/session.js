@@ -1,5 +1,7 @@
-const Discord = require('discord.js')
 const moment = require('moment')
+
+const singlePandaUrl = 'https://assets.lisakoller.at/discord/single-panda.jpg'
+const teamPandaUrl = 'https://assets.lisakoller.at/discord/team-panda.jpg'
 
 const nextMonday = getNextMonday()
 
@@ -27,9 +29,9 @@ const basicEmbed = {
   },
   description:
     'Wann würde es euch am besten passen?\nStandard-Startzeit: 20:00 Uhr 🕗',
-  /*thumbnail: {
-		url: 'https://i.imgur.com/wSTFkRM.png',
-	},*/
+  thumbnail: {
+    url: singlePandaUrl,
+  },
   fields: [
     {
       name: 'Aktuell am häufigsten genannt',
@@ -77,7 +79,7 @@ const basicEmbed = {
     },
   ],
   /*image: {
-    url: 'https://i.imgur.com/wSTFkRM.png',
+    url: 'attachment://single-panda.jpg',
   },*/
   timestamp: new Date(),
   footer: {
@@ -91,7 +93,8 @@ function addUser(value, user) {
     return user
   }
 
-  const listOfUsers = value.trim()
+  const listOfUsers = value
+    .trim()
     .replace(/[<>]/g, '')
     .split('@')
     .filter((e) => e.length !== 0)
@@ -144,7 +147,15 @@ function getTopAnswer(sentMessage) {
     }
   })
 
-  const max = Math.max(monday, tuesday, wednesday, thursday, friday, saturday, sunday)
+  const max = Math.max(
+    monday,
+    tuesday,
+    wednesday,
+    thursday,
+    friday,
+    saturday,
+    sunday
+  )
 
   if (max === 1) {
     return '-'
@@ -177,136 +188,142 @@ module.exports = {
     embed.author.name = message.author['username']
     embed.author.icon_url = message.author.avatarURL()
 
-    message.channel.send({ embed: embed }).then((sentMessage) => {
-      sentMessage
-        .react('🌙')
-        .then(() => sentMessage.react('🔥'))
-        .then(() => sentMessage.react('💧'))
-        .then(() => sentMessage.react('🌳'))
-        .then(() => sentMessage.react('💰'))
-        .then(() => sentMessage.react('⛰'))
-        .then(() => sentMessage.react('☀'))
-        .catch(() => console.error('One of the emojis failed to react.'))
+    message.channel
+      .send({ /*files: [file], */embed: embed })
+      .then((sentMessage) => {
+        sentMessage
+          .react('🌙')
+          .then(() => sentMessage.react('🔥'))
+          .then(() => sentMessage.react('💧'))
+          .then(() => sentMessage.react('🌳'))
+          .then(() => sentMessage.react('💰'))
+          .then(() => sentMessage.react('⛰'))
+          .then(() => sentMessage.react('☀'))
+          .catch(() => console.error('One of the emojis failed to react.'))
 
-      const filter = (reaction, user) => {
-        return (
-          user.username !== 'Date-Selection-Bot' &&
-          (reaction.emoji.name === '🌙' ||
-            reaction.emoji.name === '🔥' ||
-            reaction.emoji.name === '💧' ||
-            reaction.emoji.name === '🌳' ||
-            reaction.emoji.name === '💰' ||
-            reaction.emoji.name === '⛰' ||
-            reaction.emoji.name === '☀')
-        )
-      }
+        const filter = (reaction, user) => {
+          return (
+            user.username !== 'Date-Selection-Bot' &&
+            (reaction.emoji.name === '🌙' ||
+              reaction.emoji.name === '🔥' ||
+              reaction.emoji.name === '💧' ||
+              reaction.emoji.name === '🌳' ||
+              reaction.emoji.name === '💰' ||
+              reaction.emoji.name === '⛰' ||
+              reaction.emoji.name === '☀')
+          )
+        }
 
-      const collector = sentMessage.createReactionCollector(filter, {
-        dispose: true,
-      })
+        const collector = sentMessage.createReactionCollector(filter, {
+          dispose: true,
+        })
 
-      collector.on('collect', (reaction, user) => {
-        console.log(`Collected ${reaction.emoji.name} from ${user.tag}`)
+        collector.on('collect', (reaction, user) => {
+          console.log(`Collected ${reaction.emoji.name} from ${user.tag}`)
 
-        const receivedEmbed = sentMessage.embeds[0]
+          const receivedEmbed = sentMessage.embeds[0]
 
-        let fields = receivedEmbed.fields.map((entry, index) => {
-          let o = Object.assign({}, entry)
+          let fields = receivedEmbed.fields.map((entry, index) => {
+            let o = Object.assign({}, entry)
 
-          switch (true) {
-            case index === 0:
-              o.value = getTopAnswer(sentMessage)
-              break
-            case index === 2 && reaction.emoji.name === '🌙':
-              o.value = addUser(o.value, user)
-              break
-            case index === 3 && reaction.emoji.name === '🔥':
-              o.value = addUser(o.value, user)
-              break
-            case index === 4 && reaction.emoji.name === '💧':
-              o.value = addUser(o.value, user)
-              break
-            case index === 5 && reaction.emoji.name === '🌳':
-              o.value = addUser(o.value, user)
-              break
-            case index === 6 && reaction.emoji.name === '💰':
-              o.value = addUser(o.value, user)
-              break
-            case index === 7 && reaction.emoji.name === '⛰':
-              o.value = addUser(o.value, user)
-              break
-            case index === 8 && reaction.emoji.name === '☀':
-              o.value = addUser(o.value, user)
-              break
+            switch (true) {
+              case index === 0:
+                o.value = getTopAnswer(sentMessage)
+                break
+              case index === 2 && reaction.emoji.name === '🌙':
+                o.value = addUser(o.value, user)
+                break
+              case index === 3 && reaction.emoji.name === '🔥':
+                o.value = addUser(o.value, user)
+                break
+              case index === 4 && reaction.emoji.name === '💧':
+                o.value = addUser(o.value, user)
+                break
+              case index === 5 && reaction.emoji.name === '🌳':
+                o.value = addUser(o.value, user)
+                break
+              case index === 6 && reaction.emoji.name === '💰':
+                o.value = addUser(o.value, user)
+                break
+              case index === 7 && reaction.emoji.name === '⛰':
+                o.value = addUser(o.value, user)
+                break
+              case index === 8 && reaction.emoji.name === '☀':
+                o.value = addUser(o.value, user)
+                break
+            }
+            return o
+          })
+
+          const updatedEmbed = {
+            color: receivedEmbed.color,
+            title: receivedEmbed.title,
+            author: receivedEmbed.author,
+            description: receivedEmbed.description,
+            thumbnail: receivedEmbed.thumbnail,
+            fields: fields,
+            timestamp: receivedEmbed.timestamp,
+            footer: receivedEmbed.footer
           }
-          return o
+
+          sentMessage.edit({ embed: updatedEmbed })
         })
 
-        const updatedEmbed = new Discord.MessageEmbed({
-          color: receivedEmbed.color,
-          title: receivedEmbed.title,
-          author: receivedEmbed.author,
-          description: receivedEmbed.description,
-          fields: fields,
-          timestamp: receivedEmbed.timestamp,
-          footer: receivedEmbed.footer,
-        })
-        sentMessage.edit(updatedEmbed)
-      })
+        collector.on('remove', (reaction, user) => {
+          console.log(`Remove ${reaction.emoji.name} from ${user.tag}`)
 
-      collector.on('remove', (reaction, user) => {
-        console.log(`Remove ${reaction.emoji.name} from ${user.tag}`)
+          const receivedEmbed = sentMessage.embeds[0]
 
-        const receivedEmbed = sentMessage.embeds[0]
+          let fields = receivedEmbed.fields.map((entry, index) => {
+            let o = Object.assign({}, entry)
 
-        let fields = receivedEmbed.fields.map((entry, index) => {
-          let o = Object.assign({}, entry)
+            switch (true) {
+              case index === 0:
+                o.value = getTopAnswer(sentMessage)
+                break
+              case index === 2 && reaction.emoji.name === '🌙':
+                o.value = removeUser(o.value, user)
+                break
+              case index === 3 && reaction.emoji.name === '🔥':
+                o.value = removeUser(o.value, user)
+                break
+              case index === 4 && reaction.emoji.name === '💧':
+                o.value = removeUser(o.value, user)
+                break
+              case index === 5 && reaction.emoji.name === '🌳':
+                o.value = removeUser(o.value, user)
+                break
+              case index === 6 && reaction.emoji.name === '💰':
+                o.value = removeUser(o.value, user)
+                break
+              case index === 7 && reaction.emoji.name === '⛰':
+                o.value = removeUser(o.value, user)
+                break
+              case index === 8 && reaction.emoji.name === '☀':
+                o.value = removeUser(o.value, user)
+                break
+            }
+            return o
+          })
 
-          switch (true) {
-            case index === 0:
-              o.value = getTopAnswer(sentMessage)
-              break
-            case index === 2 && reaction.emoji.name === '🌙':
-              o.value = removeUser(o.value, user)
-              break
-            case index === 3 && reaction.emoji.name === '🔥':
-              o.value = removeUser(o.value, user)
-              break
-            case index === 4 && reaction.emoji.name === '💧':
-              o.value = removeUser(o.value, user)
-              break
-            case index === 5 && reaction.emoji.name === '🌳':
-              o.value = removeUser(o.value, user)
-              break
-            case index === 6 && reaction.emoji.name === '💰':
-              o.value = removeUser(o.value, user)
-              break
-            case index === 7 && reaction.emoji.name === '⛰':
-              o.value = removeUser(o.value, user)
-              break
-            case index === 8 && reaction.emoji.name === '☀':
-              o.value = removeUser(o.value, user)
-              break
+          const updatedEmbed = {
+            color: receivedEmbed.color,
+            title: receivedEmbed.title,
+            author: receivedEmbed.author,
+            description: receivedEmbed.description,
+            thumbnail: receivedEmbed.thumbnail,
+            fields: fields,
+            timestamp: receivedEmbed.timestamp,
+            footer: receivedEmbed.footer
           }
-          return o
+
+          sentMessage.edit({ embed: updatedEmbed })
         })
 
-        const updatedEmbed = new Discord.MessageEmbed({
-          color: receivedEmbed.color,
-          title: receivedEmbed.title,
-          author: receivedEmbed.author,
-          description: receivedEmbed.description,
-          fields: fields,
-          timestamp: receivedEmbed.timestamp,
-          footer: receivedEmbed.footer,
+        collector.on('end', (collected) => {
+          console.log(`Collected ${collected.size} items`)
         })
-        sentMessage.edit(updatedEmbed)
       })
-
-      collector.on('end', (collected) => {
-        console.log(`Collected ${collected.size} items`)
-      })
-    })
     message.channel.send('@everyone Es gibt wieder was zum Abstimmen ⬆')
   },
 }
