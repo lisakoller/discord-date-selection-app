@@ -26,14 +26,14 @@ async function handleReactions(reaction, user, type) {
   let fullmessage
 
   if (reaction.message.partial) {
-    console.log('Hi there, partial!')
+    // console.log('Hi there, partial!')
     try {
       fullmessage = await reaction.message.fetch()
     } catch (error) {
       console.error('Something went wrong when fetching the message: ', error)
     }
   } else {
-    console.log('This is not a message partial')
+    // console.log('This is not a message partial')
     fullmessage = reaction.message
   }
 
@@ -41,8 +41,6 @@ async function handleReactions(reaction, user, type) {
   const title = fullmessage.embeds[0].title
 
   if (author.bot === true && author.id === '802091512573722654' && title === 'Nächste Gaming-Session') {
-    console.log('I need to do something with those reactions!')
-
     const command = client.commands.get('session')
     try {
       command.handleReaction(fullmessage, reaction, user, type)

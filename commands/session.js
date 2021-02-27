@@ -21,24 +21,49 @@ function getNextMonday() {
   }
 }
 
-const emojiList = ['🇦', '🇧', '🇨', '🇩', '🇪', '🇫', '🇬', '🇭', '🇮', '🇯', '🇰', '🇱', '🇲', '🇳', '🇴', '🇵', '🇶', '🇷', '🇸', '🇹', '🇺', '🇻', '🇼', '🇽', '🇾', '🇿']
+const emojiList = [
+  '🇦',
+  '🇧',
+  '🇨',
+  '🇩',
+  '🇪',
+  '🇫',
+  '🇬',
+  '🇭',
+  '🇮',
+  '🇯',
+  '🇰',
+  '🇱',
+  '🇲',
+  '🇳',
+  '🇴',
+  '🇵',
+  '🇶',
+  '🇷',
+  '🇸',
+  '🇹',
+  '🇺',
+  '🇻',
+  '🇼',
+  '🇽',
+  '🇾',
+  '🇿',
+]
 let options = buildOptions(nDays, nextMonday)
 
 function buildOptions(max, startingOn) {
   let result = []
-  for(let i = 0; i < max; i++) {
+  for (let i = 0; i < max; i++) {
     startingOn.add(i === 0 ? 0 : 1, 'days')
     let weekday = startingOn.format('dddd')
     let dateAsNumber = startingOn.date()
     let icon = emojiList[i]
-    result.push(
-      {
-        'icon': icon,
-        'text': `${icon}  ${weekday} (${dateAsNumber}.)`,
-        'weekday': weekday,
-        'value': '-'
-      }
-    )
+    result.push({
+      icon: icon,
+      text: `${icon}  ${weekday} (${dateAsNumber}.)`,
+      weekday: weekday,
+      value: '-',
+    })
   }
   return result
 }
@@ -53,14 +78,14 @@ function _getBasicEmbedFields() {
       name: '\u200b',
       value: '\u200b',
       inline: false,
-    }
+    },
   ]
-  
+
   let basicEmbedFieldsB = []
-  options.forEach(option => {
+  options.forEach((option) => {
     basicEmbedFieldsB.push({ name: option['text'], value: option['value'], inline: true })
   })
-  
+
   return basicEmbedFieldsA.concat(basicEmbedFieldsB)
 }
 
@@ -73,8 +98,7 @@ const basicEmbed = {
     icon_url: 'https://i.imgur.com/wSTFkRM.png',
     //url: 'https://discord.js.org',
   },
-  description:
-    'Wann würde es euch am besten passen?\nStandard-Startzeit: 20:00 Uhr 🕗',
+  description: 'Wann würde es euch am besten passen?\nStandard-Startzeit: 20:00 Uhr 🕗',
   thumbnail: {
     url: singlePandaUrl,
   },
@@ -115,75 +139,68 @@ function removeUser(value, user) {
 
 function getTopAnswer(sentMessage) {
   let reactions = sentMessage.reactions.cache.array()
-  let day0
-  let day1
-  let day2
-  let day3
-  let day4
-  let day5
-  let day6
-  reactions.forEach((react) => {
-    switch (react.emoji.name) {
-      case options[0]['icon']:
-        day0 = react.count
-        break
-      case options[1]['icon']:
-        day1 = react.count
-        break
-      case options[2]['icon']:
-        day2 = react.count
-        break
-      case options[3]['icon']:
-        day3 = react.count
-        break
-      case options[4]['icon']:
-        day4 = react.count
-        break
-      case options[5]['icon']:
-        day5 = react.count
-        break
-      case options[6]['icon']:
-        day6 = react.count
-        break
-    }
+
+  let counts = []
+  reactions.forEach((reaction) => {
+    counts.push({ icon: reaction.emoji.name, count: reaction.count })
   })
 
-  const max = Math.max(
-    day0,
-    day1,
-    day2,
-    day3,
-    day4,
-    day5,
-    day6
+  // get maximum number of reactions
+  const max = Math.max.apply(
+    Math,
+    counts.map((o) => {
+      return o.count
+    })
   )
-
   if (max === 1) {
     return '-'
   }
 
+  let fields = sentMessage.embeds[0].fields
   let result = ''
-  if (day0 === max) result += `${options[0]['icon']} ${options[0]['weekday']}\n`
-  if (day1 === max) result += `${options[1]['icon']} ${options[1]['weekday']}\n`
-  if (day2 === max) result += `${options[2]['icon']} ${options[2]['weekday']}\n`
-  if (day3 === max) result += `${options[3]['icon']} ${options[3]['weekday']}\n`
-  if (day4 === max) result += `${options[4]['icon']} ${options[4]['weekday']}\n`
-  if (day5 === max) result += `${options[5]['icon']} ${options[5]['weekday']}\n`
-  if (day6 === max) result += `${options[6]['icon']} ${options[6]['weekday']}\n`
+  counts
+    .filter((entry) => {
+      // throw away entries where the count is not the max
+      if (entry.count !== max) {
+        return false
+      }
+      return true
+    })
+    .map((entry) => {
+      const weekday = fields
+        .filter((_, index) => {
+          // throw away the first two general fields
+          if (index === 0 || index === 1) {
+            return false
+          }
+          return true
+        })
+        .map((field) => {
+          let o = Object.assign({}, field)
+          if (o.name.includes(entry.icon)) {
+            // ${icon}  ${weekday} (${dateAsNumber}.)
+            // �  Samstag (6.)
+            const parts = o.name.split(' ')
+            return parts[2]
+          }
+        })
+      result += `${entry.icon} ${weekday.join('')}\n`
+    })
+
   return result.length > 0 ? result : '-'
 }
 
 async function updateFields(receivedEmbed, sentMessage, reaction, user, type) {
   return new Promise((resolve, reject) => {
-    if(!(type === 'add' || type === 'remove')) {
+    if (!(type === 'add' || type === 'remove')) {
       reject('Wrong type!')
     }
     let result = receivedEmbed.fields.map((entry, index) => {
       let o = Object.assign({}, entry)
 
-      if(index === 0) {
+      if (index === 0) {
         o.value = getTopAnswer(sentMessage)
-      } else if(index >= 2 && reaction.emoji.name === options[index-2]['icon']) {
+      } else if (index >= 2 && reaction.emoji.name === options[index - 2]['icon']) {
         // index-2 because there are 2 "standard" fields that need to be subtracted (intro + blank space; see basicEmbedFieldsA)
         o.value = type === 'add' ? addUser(o.value, user) : removeUser(o.value, user)
       }
@@ -200,8 +217,7 @@ module.exports = {
   args: false,
   async handleReaction(message, reaction, user, type) {
     try {
-      console.log('--- hi there, I am the function to add')
-      if(options.some(option => option.icon === reaction.emoji.name)) {
+      if (options.some((option) => option.icon === reaction.emoji.name)) {
         const receivedEmbed = await message.embeds[0]
 
         let fields = await updateFields(receivedEmbed, message, reaction, user, type)
@@ -221,7 +237,7 @@ module.exports = {
       } else {
         console.log('Wrong reaction dude 🙄')
       }
-    } catch(error) {
+    } catch (error) {
       console.log('Something went wrong: ', error)
     }
   },
@@ -239,17 +255,13 @@ module.exports = {
 
     try {
       let sentMessage = await message.channel.send({ /*files: [file], */ embed: embed })
-      await sentMessage.react(options[0]['icon'])
-      await sentMessage.react(options[1]['icon'])
-      await sentMessage.react(options[2]['icon'])
-      await sentMessage.react(options[3]['icon'])
-      await sentMessage.react(options[4]['icon'])
-      await sentMessage.react(options[5]['icon'])
-      await sentMessage.react(options[6]['icon'])
-    } catch(error) {
+      options.forEach(async (option) => {
+        await sentMessage.react(option['icon'])
+      })
+    } catch (error) {
       console.error('One of the emojis failed to react.')
     }
-    
+
     message.channel.send('@everyone Es gibt wieder was zum Abstimmen ⬆')
   },
 }
