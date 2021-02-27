@@ -99,7 +99,7 @@ client.on('message', async (message) => {
 })
 
 client.on('ready', () => {
-  client.user.setActivity(`euren Nachrichten`, { type: 'LISTENING' })
+  client.user.setActivity(`deinen Nachrichten`, { type: 'LISTENING' })
 })
 
 client.login(token)
