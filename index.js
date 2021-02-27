@@ -27,10 +27,10 @@ client.on('message', (message) => {
   const command = client.commands.get(commandName)
 
   if (command.args && !args.length) {
-    let reply = `You didn't provide any arguments, ${message.author}!`
+    let reply = `Du hast keine Argumente angegeben, ${message.author}!`
 
     if (command.usage) {
-      reply += `\nThe proper usage would be: \`${prefix}${command.name} ${command.usage}\``
+      reply += `\nSo würds funktionieren: \`${prefix}${command.name} ${command.usage}\``
     }
 
     return message.channel.send(reply)
@@ -40,7 +40,7 @@ client.on('message', (message) => {
     command.execute(message, args)
   } catch (error) {
     console.error(error)
-    message.reply('There was an error trying to execute that command! :(')
+    message.reply('Ein Fehler ist dabei aufgetreten das Kommando auszuführen! :(')
   }
 })
 

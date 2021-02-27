@@ -1,7 +1,10 @@
 const moment = require('moment')
+moment.locale('de')
 
 const singlePandaUrl = 'https://assets.lisakoller.at/discord/single-panda.jpg'
 const teamPandaUrl = 'https://assets.lisakoller.at/discord/team-panda.jpg'
+
+const nDays = 7
 
 const nextMonday = getNextMonday()
 
@@ -18,6 +21,44 @@ function getNextMonday() {
   }
 }
 
+const emojiList = ['🇦', '🇧', '🇨', '🇩', '🇪', '🇫', '🇬', '🇭', '🇮', '🇯', '🇰', '🇱', '🇲', '🇳', '🇴', '🇵', '🇶', '🇷', '🇸', '🇹', '🇺', '🇻', '🇼', '🇽', '🇾', '🇿']
+let options = []
+for(let i = 0; i < nDays; i++) {
+  nextMonday.add(i === 0 ? 0 : 1, 'days')
+  let weekday = nextMonday.format('dddd')
+  let dateAsNumber = nextMonday.date()
+  let icon = emojiList[i]
+  options.push(
+    {
+      'icon': icon,
+      'text': `${icon}  ${weekday} (${dateAsNumber}.)`,
+      'weekday': weekday,
+      'value': '-'
+    }
+  )
+}
+
+function _getBasicEmbedFields() {
+  const basicEmbedFieldsA = [
+    {
+      name: 'Aktuell am häufigsten genannt',
+      value: '-',
+    },
+    {
+      name: '\u200b',
+      value: '\u200b',
+      inline: false,
+    }
+  ]
+  
+  let basicEmbedFieldsB = []
+  options.forEach(option => {
+    basicEmbedFieldsB.push({ name: option['text'], value: option['value'], inline: true })
+  })
+  
+  return basicEmbedFieldsA.concat(basicEmbedFieldsB)
+}
+
 const basicEmbed = {
   color: 0x72e397,
   title: 'Nächste Gaming-Session',
@@ -32,52 +73,7 @@ const basicEmbed = {
   thumbnail: {
     url: singlePandaUrl,
   },
-  fields: [
-    {
-      name: 'Aktuell am häufigsten genannt',
-      value: '-',
-    },
-    {
-      name: '\u200b',
-      value: '\u200b',
-      inline: false,
-    },
-    {
-      name: `🌙 Montag (${nextMonday.date()}.)`,
-      value: '-',
-      inline: true,
-    },
-    {
-      name: `🔥 Dienstag (${nextMonday.add(1, 'days').date()}.)`,
-      value: '-',
-      inline: true,
-    },
-    {
-      name: `💧 Mittwoch (${nextMonday.add(1, 'days').date()}.)`,
-      value: '-',
-      inline: true,
-    },
-    {
-      name: `🌳 Donnerstag (${nextMonday.add(1, 'days').date()}.)`,
-      value: '-',
-      inline: true,
-    },
-    {
-      name: `💰 Freitag (${nextMonday.add(1, 'days').date()}.)`,
-      value: '-',
-      inline: true,
-    },
-    {
-      name: `⛰ Samstag (${nextMonday.add(1, 'days').date()}.)`,
-      value: '-',
-      inline: true,
-    },
-    {
-      name: `☀ Sonntag (${nextMonday.add(1, 'days').date()}.)`,
-      value: '-',
-      inline: true,
-    },
-  ],
+  fields: _getBasicEmbedFields(),
   /*image: {
     url: 'attachment://single-panda.jpg',
   },*/
@@ -114,47 +110,47 @@ function removeUser(value, user) {
 
 function getTopAnswer(sentMessage) {
   let reactions = sentMessage.reactions.cache.array()
-  let monday
-  let tuesday
-  let wednesday
-  let thursday
-  let friday
-  let saturday
-  let sunday
+  let day0
+  let day1
+  let day2
+  let day3
+  let day4
+  let day5
+  let day6
   reactions.forEach((react) => {
     switch (react.emoji.name) {
-      case '🌙':
-        monday = react.count
+      case options[0]['icon']:
+        day0 = react.count
         break
-      case '🔥':
-        tuesday = react.count
+      case options[1]['icon']:
+        day1 = react.count
         break
-      case '💧':
-        wednesday = react.count
+      case options[2]['icon']:
+        day2 = react.count
         break
-      case '🌳':
-        thursday = react.count
+      case options[3]['icon']:
+        day3 = react.count
         break
-      case '💰':
-        friday = react.count
+      case options[4]['icon']:
+        day4 = react.count
         break
-      case '⛰':
-        saturday = react.count
+      case options[5]['icon']:
+        day5 = react.count
         break
-      case '☀':
-        sunday = react.count
+      case options[6]['icon']:
+        day6 = react.count
         break
     }
   })
 
   const max = Math.max(
-    monday,
-    tuesday,
-    wednesday,
-    thursday,
-    friday,
-    saturday,
-    sunday
+    day0,
+    day1,
+    day2,
+    day3,
+    day4,
+    day5,
+    day6
   )
 
   if (max === 1) {
@@ -162,19 +158,19 @@ function getTopAnswer(sentMessage) {
   }
 
   let result = ''
-  if (monday === max) result += `🌙 Montag\n`
-  if (tuesday === max) result += `🔥 Dienstag\n`
-  if (wednesday === max) result += `💧 Mittwoch\n`
-  if (thursday === max) result += `🌳 Donnerstag\n`
-  if (friday === max) result += `💰 Freitag\n`
-  if (saturday === max) result += `⛰ Samstag\n`
-  if (sunday === max) result += `☀ Sonntag\n`
+  if (day0 === max) result += `${options[0]['icon']} ${options[0]['weekday']}\n`
+  if (day1 === max) result += `${options[1]['icon']} ${options[1]['weekday']}\n`
+  if (day2 === max) result += `${options[2]['icon']} ${options[2]['weekday']}\n`
+  if (day3 === max) result += `${options[3]['icon']} ${options[3]['weekday']}\n`
+  if (day4 === max) result += `${options[4]['icon']} ${options[4]['weekday']}\n`
+  if (day5 === max) result += `${options[5]['icon']} ${options[5]['weekday']}\n`
+  if (day6 === max) result += `${options[6]['icon']} ${options[6]['weekday']}\n`
   return result.length > 0 ? result : '-'
 }
 
 module.exports = {
   name: 'session',
-  description: 'When should the next session take place?',
+  description: 'Wann soll die nächste Session stattfinden?',
   args: false,
   execute(message, args) {
     /*if (!args.length) {
@@ -189,28 +185,22 @@ module.exports = {
     embed.author.icon_url = message.author.avatarURL()
 
     message.channel
-      .send({ /*files: [file], */embed: embed })
+      .send({ /*files: [file], */ embed: embed })
       .then((sentMessage) => {
         sentMessage
-          .react('🌙')
-          .then(() => sentMessage.react('🔥'))
-          .then(() => sentMessage.react('💧'))
-          .then(() => sentMessage.react('🌳'))
-          .then(() => sentMessage.react('💰'))
-          .then(() => sentMessage.react('⛰'))
-          .then(() => sentMessage.react('☀'))
+          .react(options[0]['icon'])
+          .then(() => sentMessage.react(options[1]['icon']))
+          .then(() => sentMessage.react(options[2]['icon']))
+          .then(() => sentMessage.react(options[3]['icon']))
+          .then(() => sentMessage.react(options[4]['icon']))
+          .then(() => sentMessage.react(options[5]['icon']))
+          .then(() => sentMessage.react(options[6]['icon']))
           .catch(() => console.error('One of the emojis failed to react.'))
 
         const filter = (reaction, user) => {
           return (
             user.username !== 'Date-Selection-Bot' &&
-            (reaction.emoji.name === '🌙' ||
-              reaction.emoji.name === '🔥' ||
-              reaction.emoji.name === '💧' ||
-              reaction.emoji.name === '🌳' ||
-              reaction.emoji.name === '💰' ||
-              reaction.emoji.name === '⛰' ||
-              reaction.emoji.name === '☀')
+            options.some(option => option.icon === reaction.emoji.name)
           )
         }
 
@@ -230,25 +220,25 @@ module.exports = {
               case index === 0:
                 o.value = getTopAnswer(sentMessage)
                 break
-              case index === 2 && reaction.emoji.name === '🌙':
+              case index === 2 && reaction.emoji.name === options[0]['icon']:
                 o.value = addUser(o.value, user)
                 break
-              case index === 3 && reaction.emoji.name === '🔥':
+              case index === 3 && reaction.emoji.name === options[1]['icon']:
                 o.value = addUser(o.value, user)
                 break
-              case index === 4 && reaction.emoji.name === '💧':
+              case index === 4 && reaction.emoji.name === options[2]['icon']:
                 o.value = addUser(o.value, user)
                 break
-              case index === 5 && reaction.emoji.name === '🌳':
+              case index === 5 && reaction.emoji.name === options[3]['icon']:
                 o.value = addUser(o.value, user)
                 break
-              case index === 6 && reaction.emoji.name === '💰':
+              case index === 6 && reaction.emoji.name === options[4]['icon']:
                 o.value = addUser(o.value, user)
                 break
-              case index === 7 && reaction.emoji.name === '⛰':
+              case index === 7 && reaction.emoji.name === options[5]['icon']:
                 o.value = addUser(o.value, user)
                 break
-              case index === 8 && reaction.emoji.name === '☀':
+              case index === 8 && reaction.emoji.name === options[6]['icon']:
                 o.value = addUser(o.value, user)
                 break
             }
@@ -263,7 +253,7 @@ module.exports = {
             thumbnail: receivedEmbed.thumbnail,
             fields: fields,
             timestamp: receivedEmbed.timestamp,
-            footer: receivedEmbed.footer
+            footer: receivedEmbed.footer,
           }
 
           sentMessage.edit({ embed: updatedEmbed })
@@ -281,25 +271,25 @@ module.exports = {
               case index === 0:
                 o.value = getTopAnswer(sentMessage)
                 break
-              case index === 2 && reaction.emoji.name === '🌙':
+              case index === 2 && reaction.emoji.name === options[0]['icon']:
                 o.value = removeUser(o.value, user)
                 break
-              case index === 3 && reaction.emoji.name === '🔥':
+              case index === 3 && reaction.emoji.name === options[1]['icon']:
                 o.value = removeUser(o.value, user)
                 break
-              case index === 4 && reaction.emoji.name === '💧':
+              case index === 4 && reaction.emoji.name === options[2]['icon']:
                 o.value = removeUser(o.value, user)
                 break
-              case index === 5 && reaction.emoji.name === '🌳':
+              case index === 5 && reaction.emoji.name === options[3]['icon']:
                 o.value = removeUser(o.value, user)
                 break
-              case index === 6 && reaction.emoji.name === '💰':
+              case index === 6 && reaction.emoji.name === options[4]['icon']:
                 o.value = removeUser(o.value, user)
                 break
-              case index === 7 && reaction.emoji.name === '⛰':
+              case index === 7 && reaction.emoji.name === options[5]['icon']:
                 o.value = removeUser(o.value, user)
                 break
-              case index === 8 && reaction.emoji.name === '☀':
+              case index === 8 && reaction.emoji.name === options[6]['icon']:
                 o.value = removeUser(o.value, user)
                 break
             }
@@ -314,7 +304,7 @@ module.exports = {
             thumbnail: receivedEmbed.thumbnail,
             fields: fields,
             timestamp: receivedEmbed.timestamp,
-            footer: receivedEmbed.footer
+            footer: receivedEmbed.footer,
           }
 
           sentMessage.edit({ embed: updatedEmbed })
