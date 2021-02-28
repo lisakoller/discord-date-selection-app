@@ -3,6 +3,7 @@ const fs = require('fs')
 const Discord = require('discord.js')
 const { prefix } = require('./config.json')
 const token = process.env.TOKEN
+const guildID = process.env.GUILDID
 
 const client = new Discord.Client({
   partials: ['MESSAGE', 'CHANNEL', 'REACTION'],
@@ -101,7 +102,8 @@ client.on('message', async (message) => {
 client.on('ready', async () => {
   // TODO
   try {
-    const members = await client.guilds.cache.get(process.env.GUILDID).members.fetch()
+    console.log(guildID)
+    const members = await client.guilds.cache.get(guildID).members.fetch()
     console.log(members)
   } catch(error) {
     console.log('something went wrong: ', error)
