@@ -230,6 +230,13 @@ function getTopAnswer(sentMessage) {
       result += `${entry.icon} ${weekday.join('')}\n`
     })
 
+  const guild = sentMessage.guild
+  const memberCount = guild.members.cache.filter(member => !member.user.bot).size
+  if(max-1 >= memberCount) {
+    console.log(`Yay! All ${memberCount} members have voted!`)
+    guild.owner.user.send(`Ziel erreicht! 🙂\nEs haben alle ${memberCount} bei einer Umfrage für den selben Tag gestimmt! Überprüf nochmal ob es mehrere Tage betrifft und entscheide dich in dem Fall für einen! 🙂`)
+  }
+
   return result.length > 0 ? result : '-'
 }
 
