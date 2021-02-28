@@ -100,11 +100,8 @@ client.on('message', async (message) => {
 })
 
 client.on('ready', async () => {
-  // TODO
   try {
-    console.log(guildID)
     const members = await client.guilds.cache.get(guildID).members.fetch()
-    console.log(members)
   } catch(error) {
     console.log('something went wrong: ', error)
   }
