@@ -4,9 +4,6 @@ moment.locale('de')
 const singlePandaUrl = 'https://assets.lisakoller.at/discord/single-panda.jpg'
 const teamPandaUrl = 'https://assets.lisakoller.at/discord/team-panda.jpg'
 
-let nDays
-let startingDay
-
 function getStartingDateByISO(dayINeed = 1) {
   // if we haven’t yet passed the day of the week that I need:
   if (moment().isoWeekday() <= dayINeed) {
@@ -289,6 +286,9 @@ module.exports = {
     }
   },
   async execute(message, args) {
+    let startingDay
+    let nDays
+
     if (!args.length) {
       startingDay = getStartingDateByISO()
       nDays = 7
@@ -299,12 +299,10 @@ module.exports = {
         startingDay = getStartingDateByISO(
           availableStartingWeekdays.find((day) => day.text === args[0].toLowerCase()).isoWeekday
         )
-        nDays = 7
       } else if (availableRelativeStartingDays.some((day) => day.text === args[0].toLowerCase())) {
         startingDay = getStartingDateByToday(
           availableRelativeStartingDays.find((day) => day.text === args[0].toLowerCase()).addDays
         )
-        nDays = 7
       } else {
         const inputDate = moment(args[0], 'DD.MM.YYYY')
         if (!inputDate.isValid()) {
@@ -321,8 +319,28 @@ module.exports = {
           )
         } else {
           startingDay = inputDate
-          nDays = 7
         }
+      }
+
+      if (args[1]) {
+        const inputNumber = parseInt(args[1])
+        if (!Number.isInteger(inputNumber)) {
+          return message.channel.send(`${args[1]} ist keine gültige, ganze Zahl. Halbe Tage gibt's nicht 😉`)
+        } else if (inputNumber <= 0) {
+          return message.channel.send(
+            `Die Anzahl an Tagen muss eine positive, ganze Zahl sein. Das trifft auf ${args[1]} leider nicht zu 😉`
+          )
+        } else if (inputNumber === 1) {
+          return message.channel.send(`I see what you did there 😏 Zumindest 2 Optionen sollten es aber schon sein 😂`)
+        } else if (inputNumber > 14) {
+          return message.channel.send(
+            `Muss man wirklich ${args[1]} Tage zur Abstimmung geben? 😅 Bitte gib nicht mehr als 14 an 🙂`
+          )
+        } else {
+          nDays = inputNumber
+        }
+      } else {
+        nDays = 7
       }
     }
 
