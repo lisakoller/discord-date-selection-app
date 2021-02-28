@@ -4,13 +4,10 @@ moment.locale('de')
 const singlePandaUrl = 'https://assets.lisakoller.at/discord/single-panda.jpg'
 const teamPandaUrl = 'https://assets.lisakoller.at/discord/team-panda.jpg'
 
-const nDays = 7
+let nDays
+let startingDay
 
-const nextMonday = getNextMonday()
-
-function getNextMonday() {
-  const dayINeed = 1
-
+function getStartingDateByISO(dayINeed = 1) {
   // if we haven’t yet passed the day of the week that I need:
   if (moment().isoWeekday() <= dayINeed) {
     // then just give me this week’s instance of that day
@@ -21,6 +18,54 @@ function getNextMonday() {
   }
 }
 
+function getStartingDateByToday(addDays = 0) {
+  return moment().add(addDays, 'days')
+}
+
+const availableStartingWeekdays = [
+  {
+    text: 'montag',
+    isoWeekday: 1,
+  },
+  {
+    text: 'dienstag',
+    isoWeekday: 2,
+  },
+  {
+    text: 'mittwoch',
+    isoWeekday: 3,
+  },
+  {
+    text: 'donnerstag',
+    isoWeekday: 4,
+  },
+  {
+    text: 'freitag',
+    isoWeekday: 5,
+  },
+  {
+    text: 'samstag',
+    isoWeekday: 6,
+  },
+  {
+    text: 'sonntag',
+    isoWeekday: 7,
+  },
+]
+const availableRelativeStartingDays = [
+  {
+    text: 'heute',
+    addDays: 0,
+  },
+  {
+    text: 'morgen',
+    addDays: 1,
+  },
+  {
+    text: 'übermorgen',
+    addDays: 2,
+  },
+]
 const emojiList = [
   '🇦',
   '🇧',
@@ -49,7 +94,6 @@ const emojiList = [
   '🇾',
   '🇿',
 ]
-let options = buildOptions(nDays, nextMonday)
 
 function buildOptions(max, startingOn) {
   let result = []
@@ -68,7 +112,7 @@ function buildOptions(max, startingOn) {
   return result
 }
 
-function _getBasicEmbedFields() {
+function _getBasicEmbedFields(options) {
   const basicEmbedFieldsA = [
     {
       name: 'Aktuell am häufigsten genannt',
@@ -89,28 +133,30 @@ function _getBasicEmbedFields() {
   return basicEmbedFieldsA.concat(basicEmbedFieldsB)
 }
 
-const basicEmbed = {
-  color: 0x72e397,
-  title: 'Nächste Gaming-Session',
-  //url: 'https://discord.js.org',
-  author: {
-    name: 'VIP',
-    icon_url: 'https://i.imgur.com/wSTFkRM.png',
+function _getBasicEmbed(options) {
+  return {
+    color: 0x72e397,
+    title: 'Nächste Gaming-Session',
     //url: 'https://discord.js.org',
-  },
-  description: 'Wann würde es euch am besten passen?\nStandard-Startzeit: 20:00 Uhr 🕗',
-  thumbnail: {
-    url: singlePandaUrl,
-  },
-  fields: _getBasicEmbedFields(),
-  /*image: {
-    url: 'attachment://single-panda.jpg',
-  },*/
-  timestamp: new Date(),
-  footer: {
-    text: 'Version 1.0',
-    //icon_url: 'https://i.imgur.com/wSTFkRM.png',
-  },
+    author: {
+      name: 'VIP',
+      icon_url: 'https://i.imgur.com/wSTFkRM.png',
+      //url: 'https://discord.js.org',
+    },
+    description: 'Wann würde es euch am besten passen?\nStandard-Startzeit: 20:00 Uhr 🕗',
+    thumbnail: {
+      url: singlePandaUrl,
+    },
+    fields: _getBasicEmbedFields(options),
+    /*image: {
+      url: 'attachment://single-panda.jpg',
+    },*/
+    timestamp: new Date(),
+    footer: {
+      text: 'Version 1.0',
+      //icon_url: 'https://i.imgur.com/wSTFkRM.png',
+    },
+  }
 }
 
 function addUser(value, user) {
@@ -200,7 +246,7 @@ async function updateFields(receivedEmbed, sentMessage, reaction, user, type) {
 
       if (index === 0) {
         o.value = getTopAnswer(sentMessage)
-      } else if (index >= 2 && reaction.emoji.name === options[index - 2]['icon']) {
+      } else if (index >= 2 && reaction.emoji.name === emojiList[index - 2]) {
         // index-2 because there are 2 "standard" fields that need to be subtracted (intro + blank space; see basicEmbedFieldsA)
         o.value = type === 'add' ? addUser(o.value, user) : removeUser(o.value, user)
       }
@@ -214,10 +260,10 @@ async function updateFields(receivedEmbed, sentMessage, reaction, user, type) {
 module.exports = {
   name: 'session',
   description: 'Wann soll die nächste Session stattfinden?',
-  args: false,
+  args: false, // because args are not required
   async handleReaction(message, reaction, user, type) {
     try {
-      if (options.some((option) => option.icon === reaction.emoji.name)) {
+      if (emojiList.includes(reaction.emoji.name)) {
         const receivedEmbed = await message.embeds[0]
 
         let fields = await updateFields(receivedEmbed, message, reaction, user, type)
@@ -239,17 +285,50 @@ module.exports = {
       }
     } catch (error) {
       console.log('Something went wrong: ', error)
+      message.channel.send(`Da hat etwas nicht funktioniert 🤯`)
     }
   },
   async execute(message, args) {
-    /*if (!args.length) {
-      return message.channel.send(
-        `You didn't provide any arguments, ${message.author}!`
-      )
-    } else if (args[0] === 'test') {
-      return message.channel.send('Just testing, I see 🧐')
-    }*/
-    const embed = basicEmbed
+    if (!args.length) {
+      startingDay = getStartingDateByISO()
+      nDays = 7
+    } else if (args[0]) {
+      if (args[0] === 'test') {
+        return message.channel.send('Just testing, I see 🧐')
+      } else if (availableStartingWeekdays.some((day) => day.text === args[0].toLowerCase())) {
+        startingDay = getStartingDateByISO(
+          availableStartingWeekdays.find((day) => day.text === args[0].toLowerCase()).isoWeekday
+        )
+        nDays = 7
+      } else if (availableRelativeStartingDays.some((day) => day.text === args[0].toLowerCase())) {
+        startingDay = getStartingDateByToday(
+          availableRelativeStartingDays.find((day) => day.text === args[0].toLowerCase()).addDays
+        )
+        nDays = 7
+      } else {
+        const inputDate = moment(args[0], 'DD.MM.YYYY')
+        if (!inputDate.isValid()) {
+          return message.channel.send(
+            `Ich kann mit dem Startdatum **${args[0]}** leider nichts anfangen, tut mir leid ${message.author} 🤔\nHast es auch ganz sicher in dem Format eingegeben: **DD.MM.YYYY**, also zum Beispiel **13.05.2021**? Alternativ kannst du auch einen Wochentag angeben, dann wird zum Beispiel der nächste Dienstag genommen. Wörter wie **heute**, **morgen** und **übermorgen** funktionieren auch 😇`
+          )
+        } else if (inputDate.isBefore(moment(), 'day')) {
+          return message.channel.send(
+            `Hey, Zeitreisender! Ein Startdatum in der Vergangenheit macht nicht so viel Sinn, oder? 😉 Ich tu mal so als hättest du das nicht geschrieben 😛`
+          )
+        } else if (inputDate.isAfter(moment().add(2, 'months'))) {
+          return message.channel.send(
+            `Eine gute Planung ist Gold wert, aber mehr als zwei Monate in die Zukunft muss man nun wirklich nicht planen, oder? 😉 Gib bitte ein Startdatum innerhalb der nächsten zwei Monate an 🙂`
+          )
+        } else {
+          startingDay = inputDate
+          nDays = 7
+        }
+      }
+    }
+
+    const options = buildOptions(nDays, startingDay)
+
+    const embed = _getBasicEmbed(options)
     embed.author.name = message.author['username']
     embed.author.icon_url = message.author.avatarURL()
 
@@ -260,6 +339,7 @@ module.exports = {
       })
     } catch (error) {
       console.error('One of the emojis failed to react.')
+      message.channel.send(`Da hat etwas nicht funktioniert 🤯`)
     }
 
     message.channel.send('@everyone Es gibt wieder was zum Abstimmen ⬆')
