@@ -99,7 +99,13 @@ client.on('message', async (message) => {
 })
 
 client.on('ready', async () => {
-  const members = await client.guilds.cache.get(process.env.GUILDID).members.fetch()
+  // TODO
+  try {
+    const members = await client.guilds.cache.get(process.env.GUILDID).members.fetch()
+    console.log(members)
+  } catch(error) {
+    console.log('something went wrong: ', error)
+  }
   client.user.setActivity(`deinen Nachrichten`, { type: 'LISTENING' })
 })
 
