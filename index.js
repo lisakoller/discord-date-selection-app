@@ -95,17 +95,17 @@ client.on('message', async (message) => {
     command.execute(message, args)
   } catch (error) {
     console.error(error)
-    message.reply('Ein Fehler ist dabei aufgetreten das Kommando auszuführen! :(')
+    message.reply('Ein Fehler ist dabei aufgetreten das Kommando auszuführen! 😢')
   }
 })
 
 client.on('ready', async () => {
   try {
     const members = await client.guilds.cache.get(guildID).members.fetch()
-  } catch(error) {
+  } catch (error) {
     console.log('something went wrong: ', error)
   }
-  client.user.setActivity(`deinen Nachrichten`, { type: 'LISTENING' })
+  client.user.setActivity(`!help`, { type: 'LISTENING' })
 })
 
 client.login(token)

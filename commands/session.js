@@ -231,10 +231,12 @@ function getTopAnswer(sentMessage) {
     })
 
   const guild = sentMessage.guild
-  const memberCount = guild.members.cache.filter(member => !member.user.bot).size
-  if(max-1 >= memberCount) {
+  const memberCount = guild.members.cache.filter((member) => !member.user.bot).size
+  if (max - 1 >= memberCount) {
     console.log(`Yay! All ${memberCount} members have voted!`)
-    guild.owner.user.send(`Ziel erreicht! 🙂\nEs haben alle ${memberCount} bei einer Umfrage für den selben Tag gestimmt! Überprüf nochmal ob es mehrere Tage betrifft und entscheide dich in dem Fall für einen! 🙂`)
+    guild.owner.user.send(
+      `Ziel erreicht! 🙂\nEs haben alle ${memberCount} bei einer Umfrage für den selben Tag gestimmt! Überprüf nochmal ob es mehrere Tage betrifft und entscheide dich in dem Fall für einen! 🙂`
+    )
   }
 
   return result.length > 0 ? result : '-'
@@ -263,7 +265,17 @@ async function updateFields(receivedEmbed, sentMessage, reaction, user, type) {
 
 module.exports = {
   name: 'session',
-  description: 'Wann soll die nächste Session stattfinden?',
+  description: 'Startet eine Umfrage, wann die nächste Gaming-Session stattfinden soll.',
+  usage:
+    `[erster Tag] [Dauer]\n\n` +
+    `🔹 **[erster Tag]**: Erster Tag, der vorgeschlagen wird.\n` +
+    `       - optional\n` +
+    `       - Datum in der Form \`13.05.2021\`, ein Wochentag (automatisch der nächste z. B. \`Mittwoch\`) oder \`heute\`, \`morgen\`, \`übermorgen\`\n` +
+    `       - wenn kein Tag angegeben dann automatisch der nächste Montag\n` +
+    `🔹 **[Dauer]**: Wie viele Tage vorgeschlagen werden.\n` +
+    `       - optional\n` +
+    `       - positive, ganze Zahl kleiner 15\n` +
+    `       - wenn keine angegeben automatisch 7`,
   args: false, // because args are not required
   async handleReaction(message, reaction, user, type) {
     try {

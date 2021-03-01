@@ -1,8 +1,8 @@
 module.exports = {
   name: 'ping',
-  description: 'Ping!',
+  description: 'Ein einfacher Weg um zu sehen, ob der Bot online ist.',
   args: false,
   execute(message, args) {
-    message.channel.send('Pong.')
+    message.channel.send('Pong! 🏓')
   },
 }
