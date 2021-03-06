@@ -6,6 +6,7 @@ function getRandomInt(min, max) {
 
 module.exports = {
   name: 'dice',
+  aliases: ['würfel', 'würfeln'],
   description: 'Wirf den virtuellen Würfel.',
   args: false,
   execute(message, args) {

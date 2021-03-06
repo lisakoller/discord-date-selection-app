@@ -6,6 +6,7 @@ function getRandomInt(min, max) {
 
 module.exports = {
   name: 'random',
+  aliases: ['zufall', 'zufällig'],
   description: 'Wählt zufällig eine der Alternativen aus.',
   usage:
     'wort1 wort2 [wort3] [...]\n\n' +

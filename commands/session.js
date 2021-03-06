@@ -265,6 +265,7 @@ async function updateFields(receivedEmbed, sentMessage, reaction, user, type) {
 
 module.exports = {
   name: 'session',
+  aliases: ['termin'],
   description: 'Startet eine Umfrage, wann die nächste Gaming-Session stattfinden soll.',
   usage:
     `[erster Tag] [Dauer]\n\n` +
