@@ -20,7 +20,7 @@ module.exports = {
     const command = commands.get(name)
 
     if (!command) {
-      return message.reply('Das Kommando kenne ich nicht!')
+      return message.reply('das Kommando kenne ich nicht!')
     }
 
     data.push(`**Name:** ${command.name}`)

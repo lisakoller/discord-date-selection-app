@@ -85,7 +85,7 @@ client.on('message', async (message) => {
     let reply = `Du hast keine Argumente angegeben, ${message.author}!`
 
     if (command.usage) {
-      reply += `\nSo würds funktionieren: \`${prefix}${command.name} ${command.usage}\``
+      reply += `\nSo würds funktionieren: ${prefix}${command.name} ${command.usage}`
     }
 
     return message.channel.send(reply)
