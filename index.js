@@ -4,6 +4,7 @@ const Discord = require('discord.js')
 const { prefix } = require('./config.json')
 const token = process.env.TOKEN
 const guildID = process.env.GUILDID
+const authorID = process.env.AUTHORID
 
 const client = new Discord.Client({
   partials: ['MESSAGE', 'CHANNEL', 'REACTION'],
@@ -41,13 +42,13 @@ async function handleReactions(reaction, user, type) {
   const author = await fullmessage.author.fetch()
   const title = fullmessage.embeds[0].title
 
-  if (author.bot === true && author.id === '802091512573722654' && title === 'Nächste Gaming-Session') {
+  if (author.bot === true && author.id === authorID && title === 'Nächste Gaming-Session') {
     const command = client.commands.get('session')
     try {
       command.handleReaction(fullmessage, reaction, user, type)
     } catch (error) {
       console.error(error)
-      message.reply('Ein Fehler ist dabei aufgetreten das Kommando auszuführen! :(')
+      message.reply('ein Fehler ist dabei aufgetreten das Kommando auszuführen! :(')
     }
   } else {
     console.log('This is not a message where I care about the reactions.')
@@ -96,7 +97,7 @@ client.on('message', async (message) => {
     command.execute(message, args)
   } catch (error) {
     console.error(error)
-    message.reply('Ein Fehler ist dabei aufgetreten das Kommando auszuführen! 😢')
+    message.reply('ein Fehler ist dabei aufgetreten das Kommando auszuführen! 😢')
   }
 })
 
