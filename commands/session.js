@@ -1,68 +1,10 @@
+const dateHandler = require('../utilities/dateHandler')
 const moment = require('moment')
 moment.locale('de')
 
 const singlePandaUrl = 'https://assets.lisakoller.at/discord/single-panda.jpg'
 const teamPandaUrl = 'https://assets.lisakoller.at/discord/team-panda.jpg'
 
-function getStartingDateByISO(dayINeed = 1) {
-  // if we haven’t yet passed the day of the week that I need:
-  if (moment().isoWeekday() <= dayINeed) {
-    // then just give me this week’s instance of that day
-    return moment().isoWeekday(dayINeed)
-  } else {
-    // otherwise, give me next week’s instance of that day
-    return moment().add(1, 'weeks').isoWeekday(dayINeed)
-  }
-}
-
-function getStartingDateByToday(addDays = 0) {
-  return moment().add(addDays, 'days')
-}
-
-const availableStartingWeekdays = [
-  {
-    text: 'montag',
-    isoWeekday: 1,
-  },
-  {
-    text: 'dienstag',
-    isoWeekday: 2,
-  },
-  {
-    text: 'mittwoch',
-    isoWeekday: 3,
-  },
-  {
-    text: 'donnerstag',
-    isoWeekday: 4,
-  },
-  {
-    text: 'freitag',
-    isoWeekday: 5,
-  },
-  {
-    text: 'samstag',
-    isoWeekday: 6,
-  },
-  {
-    text: 'sonntag',
-    isoWeekday: 7,
-  },
-]
-const availableRelativeStartingDays = [
-  {
-    text: 'heute',
-    addDays: 0,
-  },
-  {
-    text: 'morgen',
-    addDays: 1,
-  },
-  {
-    text: 'übermorgen',
-    addDays: 2,
-  },
-]
 const emojiList = [
   '🇦',
   '🇧',
@@ -310,18 +252,18 @@ module.exports = {
     let nDays
 
     if (!args.length) {
-      startingDay = getStartingDateByISO()
+      startingDay = dateHandler.getStartingDateByISO()
       nDays = 7
     } else if (args[0]) {
       if (args[0] === 'test') {
         return message.channel.send('Just testing, I see 🧐')
-      } else if (availableStartingWeekdays.some((day) => day.text === args[0].toLowerCase())) {
-        startingDay = getStartingDateByISO(
-          availableStartingWeekdays.find((day) => day.text === args[0].toLowerCase()).isoWeekday
+      } else if (dateHandler.availableStartingWeekdays.some((day) => day.text === args[0].toLowerCase())) {
+        startingDay = dateHandler.getStartingDateByISO(
+          dateHandler.availableStartingWeekdays.find((day) => day.text === args[0].toLowerCase()).isoWeekday
         )
-      } else if (availableRelativeStartingDays.some((day) => day.text === args[0].toLowerCase())) {
-        startingDay = getStartingDateByToday(
-          availableRelativeStartingDays.find((day) => day.text === args[0].toLowerCase()).addDays
+      } else if (dateHandler.availableRelativeStartingDays.some((day) => day.text === args[0].toLowerCase())) {
+        startingDay = dateHandler.getStartingDateByToday(
+          dateHandler.availableRelativeStartingDays.find((day) => day.text === args[0].toLowerCase()).addDays
         )
       } else {
         const inputDate = moment(args[0], 'DD.MM.YYYY')
