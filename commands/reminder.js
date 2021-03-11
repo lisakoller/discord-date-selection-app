@@ -1,4 +1,5 @@
 const dateHandler = require('../utilities/dateHandler')
+const dynamoDB = require('../utilities/dynamoDB')
 const schedule = require('node-schedule')
 const moment = require('moment')
 moment.locale('de')
@@ -87,8 +88,11 @@ function addReminder(message, args) {
     customMessage = '\n' + args.slice(3).join(' ')
   }
 
+  dynamoDB.create(jobName, date, customMessage, message.channel.id)
+
   const job = schedule.scheduleJob(jobName, date, function () {
-    console.log(`The job ${jobName} is now executed!`, moment())
+    console.info(`The job ${jobName} is now executed!`, moment())
+    dynamoDB.delete(jobName)
     message.channel.send(`@everyone 🔔 **Reminder** 🔔${customMessage}`)
   })
 
@@ -146,6 +150,7 @@ function removeReminder(message, args) {
       return
     } else {
       job.cancel()
+      dynamoDB.delete(jobName)
     }
   } catch (e) {
     console.error(e)
@@ -168,6 +173,7 @@ function removeAllReminders(message, args) {
     result += `🗓️ ${name}\n`
     job.cancel()
   })
+  dynamoDB.deleteAll()
   message.channel.send(result)
 }
 
@@ -201,9 +207,17 @@ module.exports = {
     `🔸 **[Nachricht]**: Beliebige Nachricht, die mit dem Reminder ausgegeben wird.\n` +
     `       - Das Ergebnis sieht dann so aus:\n` +
     `         🔔 **Reminder** 🔔\n` +
-    `         [Nachricht]\n\n` +
-    `❗ **Wenn Änderungen am Code gemacht wurden und eine neue Version vom Bot online ist, sind alte Reminder ins Nirwana verschwunden!** ❗`,
-  args: false, // for specific error message with hints
+    `         [Nachricht]\n\n`,
+  args: false, // for specific error message with hints,
+  setReminders(reminders, client) {
+    reminders.forEach((reminder) => {
+      const job = schedule.scheduleJob(reminder.jobName, reminder.date, function () {
+        console.info(`The job ${reminder.jobName} is now executed!`, moment())
+        client.channels.cache.get(reminder.channel).send(`@everyone 🔔 **Reminder** 🔔${reminder.customMessage || ''}`)
+        dynamoDB.delete(reminder.jobName)
+      })
+    })
+  },
   execute(message, args) {
     if (!args[0]) {
       return message.channel.send(

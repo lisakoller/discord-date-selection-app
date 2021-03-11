@@ -2,9 +2,10 @@ require('dotenv').config()
 const fs = require('fs')
 const Discord = require('discord.js')
 const { prefix } = require('./config.json')
+const dynamoDB = require('./utilities/dynamoDB')
 const token = process.env.TOKEN
-const guildID = process.env.GUILDID
-const authorID = process.env.AUTHORID
+const guildID = process.env.GUILD_ID
+const authorID = process.env.AUTHOR_ID
 
 const client = new Discord.Client({
   partials: ['MESSAGE', 'CHANNEL', 'REACTION'],
@@ -20,7 +21,7 @@ for (const file of commandFiles) {
 
 async function handleReactions(reaction, user, type) {
   if (!(type === 'add' || type === 'remove')) {
-    console.log('Wrong type: ', type)
+    console.error('Wrong type: ', type)
     return
   }
   if (user.bot === true) return
@@ -51,13 +52,13 @@ async function handleReactions(reaction, user, type) {
       message.reply('ein Fehler ist dabei aufgetreten das Kommando auszuführen! :(')
     }
   } else {
-    console.log('This is not a message where I care about the reactions.')
+    console.info('This is not a message where I care about the reactions.')
   }
 
   if (type === 'add') {
-    console.log(`${user.username} reacted with "${reaction.emoji.name}".`)
+    console.info(`${user.username} reacted with "${reaction.emoji.name}".`)
   } else {
-    console.log(`${user.username} removed reaction "${reaction.emoji.name}".`)
+    console.info(`${user.username} removed reaction "${reaction.emoji.name}".`)
   }
 }
 
@@ -105,8 +106,16 @@ client.on('ready', async () => {
   try {
     const members = await client.guilds.cache.get(guildID).members.fetch()
   } catch (error) {
-    console.log('something went wrong: ', error)
+    console.error('something went wrong: ', error)
   }
+
+  try {
+    const savedReminders = await dynamoDB.setup()
+    client.commands.get('reminder').setReminders(savedReminders, client)
+  } catch (error) {
+    console.error('something went wrong setting up dynamoDB: ', error)
+  }
+
   client.user.setActivity(`!help`, { type: 'LISTENING' })
 })
 

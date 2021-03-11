@@ -109,10 +109,10 @@ function addUser(value, user) {
     .split('@')
     .filter((e) => e.length !== 0)
   if (listOfUsers.includes(user.id)) {
-    console.log(`adding user ${user} not needed`)
+    console.info(`adding user ${user} not needed`)
     return value
   } else {
-    console.log(`adding user ${user} to ${value}`)
+    console.info(`adding user ${user} to ${value}`)
     return (value += `\n${user}`)
   }
 }
@@ -175,7 +175,7 @@ function getTopAnswer(sentMessage) {
   const guild = sentMessage.guild
   const memberCount = guild.members.cache.filter((member) => !member.user.bot).size
   if (max - 1 >= memberCount) {
-    console.log(`Yay! All ${memberCount} members have voted!`)
+    console.info(`Yay! All ${memberCount} members have voted!`)
     guild.owner.user.send(
       `Ziel erreicht! 🙂\nEs haben alle ${memberCount} bei einer Umfrage für den selben Tag gestimmt! Überprüf nochmal ob es mehrere Tage betrifft und entscheide dich in dem Fall für einen! 🙂`
     )
@@ -240,10 +240,10 @@ module.exports = {
 
         message.edit({ embed: updatedEmbed })
       } else {
-        console.log('Wrong reaction dude 🙄')
+        console.info('Wrong reaction dude 🙄')
       }
     } catch (error) {
-      console.log('Something went wrong: ', error)
+      console.error('Something went wrong: ', error)
       message.channel.send(`Da hat etwas nicht funktioniert 🤯`)
     }
   },
