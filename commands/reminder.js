@@ -16,7 +16,7 @@ function listReminders(message, args) {
   message.channel.send(result)
 }
 
-function addReminder(message, args) {
+async function addReminder(message, args) {
   if (!args[1] || !args[2]) {
     return message.channel.send(
       `Für dieses Kommando musst du zumindest 2 weitere Argumente angeben (Datum und Uhrzeit) 🙂\nMit \`!help reminder\` kannst du dir mehr Infos dazu holen falls du Hilfe brauchst 😇`
@@ -26,31 +26,10 @@ function addReminder(message, args) {
   let reminderDay
   let reminderTime
 
-  if (dateHandler.availableStartingWeekdays.some((day) => day.text === args[1].toLowerCase())) {
-    reminderDay = dateHandler.getStartingDateByISO(
-      dateHandler.availableStartingWeekdays.find((day) => day.text === args[1].toLowerCase()).isoWeekday
-    )
-  } else if (dateHandler.availableRelativeStartingDays.some((day) => day.text === args[1].toLowerCase())) {
-    reminderDay = dateHandler.getStartingDateByToday(
-      dateHandler.availableRelativeStartingDays.find((day) => day.text === args[1].toLowerCase()).addDays
-    )
-  } else {
-    const inputDate = moment(args[1], 'DD.MM.YYYY')
-    if (!inputDate.isValid()) {
-      return message.channel.send(
-        `Ich kann mit dem Datum **${args[1]}** leider nichts anfangen, tut mir leid ${message.author} 🤔\nHast es auch ganz sicher in dem Format eingegeben: **DD.MM.YYYY**, also zum Beispiel **13.05.2021**? Alternativ kannst du auch einen Wochentag angeben, dann wird zum Beispiel der nächste Dienstag genommen. Wörter wie **heute**, **morgen** und **übermorgen** funktionieren auch 😇`
-      )
-    } else if (inputDate.isBefore(moment(), 'day')) {
-      return message.channel.send(
-        `Hey, Zeitreisender! Ein Reminder in der Vergangenheit macht nicht so viel Sinn, oder? 😉 Ich tu mal so als hättest du das nicht geschrieben 😛`
-      )
-    } else if (inputDate.isAfter(moment().add(2, 'weeks'))) {
-      return message.channel.send(
-        `Eine gute Planung ist Gold wert, aber mehr als zwei Wochen in die Zukunft muss man nun wirklich keine Reminder setzen, oder? 😉 Gib bitte ein Datum innerhalb der nächsten zwei Wochen an 🙂`
-      )
-    } else {
-      reminderDay = inputDate
-    }
+  try {
+    reminderDay = await dateHandler.convertInputToDate(args[1], false, 'weeks')
+  } catch(error) {
+    return message.channel.send(error)
   }
 
   const inputTime = moment(args[2], 'HH:mm')
@@ -103,7 +82,7 @@ function addReminder(message, args) {
   )
 }
 
-function removeReminder(message, args) {
+async function removeReminder(message, args) {
   if (!args[1] || !args[2]) {
     return message.channel.send(
       `Für dieses Kommando musst du 2 weitere Argumente angeben (Datum und Uhrzeit) 🙂\nMit \`!help reminder\` kannst du dir mehr Infos dazu holen falls du Hilfe brauchst 😇`
@@ -113,23 +92,10 @@ function removeReminder(message, args) {
   let reminderDay
   let reminderTime
 
-  if (dateHandler.availableStartingWeekdays.some((day) => day.text === args[1].toLowerCase())) {
-    reminderDay = dateHandler.getStartingDateByISO(
-      dateHandler.availableStartingWeekdays.find((day) => day.text === args[1].toLowerCase()).isoWeekday
-    )
-  } else if (dateHandler.availableRelativeStartingDays.some((day) => day.text === args[1].toLowerCase())) {
-    reminderDay = dateHandler.getStartingDateByToday(
-      dateHandler.availableRelativeStartingDays.find((day) => day.text === args[1].toLowerCase()).addDays
-    )
-  } else {
-    const inputDate = moment(args[1], 'DD.MM.YYYY')
-    if (!inputDate.isValid()) {
-      return message.channel.send(
-        `Ich kann mit dem Datum **${args[1]}** leider nichts anfangen, tut mir leid ${message.author} 🤔\nHast es auch ganz sicher in dem Format eingegeben: **DD.MM.YYYY**, also zum Beispiel **13.05.2021**? Alternativ kannst du auch einen Wochentag angeben, dann wird zum Beispiel der nächste Dienstag genommen. Wörter wie **heute**, **morgen** und **übermorgen** funktionieren auch 😇`
-      )
-    } else {
-      reminderDay = inputDate
-    }
+  try {
+    reminderDay = await dateHandler.convertInputToDate(args[1], true)
+  } catch(error) {
+    return message.channel.send(error)
   }
 
   const inputTime = moment(args[2], 'HH:mm')
@@ -221,7 +187,7 @@ module.exports = {
   execute(message, args) {
     if (!args[0]) {
       return message.channel.send(
-        `Für dieses Kommando musst du Argumente angeben (\`list, add, remove, clear)\` 🙂\nWenn du weitere Infos dazu brauchst verwende \`!help reminder\` 😇`
+        `Für dieses Kommando musst du Argumente angeben (\`list\`, \`add\`, \`remove\`, \`clear\`) 🙂\nWenn du weitere Infos dazu brauchst verwende \`!help reminder\` 😇`
       )
     }
 

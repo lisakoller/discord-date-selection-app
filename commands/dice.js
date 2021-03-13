@@ -1,8 +1,4 @@
-function getRandomInt(min, max) {
-  min = Math.ceil(min)
-  max = Math.floor(max)
-  return Math.floor(Math.random() * (max - min + 1)) + min
-}
+const miscFunctions = require('../utilities/misc')
 
 module.exports = {
   name: 'dice',
@@ -10,7 +6,7 @@ module.exports = {
   description: 'Wirf den virtuellen Würfel.',
   args: false,
   execute(message, args) {
-    const result = getRandomInt(1, 6)
+    const result = miscFunctions.getRandomInt(1, 6)
 
     message.channel.send(`${message.author.username} wirft den Würfel des Schicksals 🎲 ...`)
     setTimeout(function () {

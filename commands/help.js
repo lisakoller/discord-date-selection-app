@@ -9,6 +9,7 @@ module.exports = {
     const data = []
     const { commands } = message.client
 
+    // general information
     if (!args.length) {
       data.push('Das sind alle Kommandos, die du verwenden kannst:')
       data.push(commands.map((command) => command.name).join(', '))
@@ -17,6 +18,7 @@ module.exports = {
       return message.channel.send(data, { split: true })
     }
 
+    // information on a specific command
     const name = args[0].toLowerCase()
     const command = commands.get(name) || commands.find((c) => c.aliases && c.aliases.includes(name))
 

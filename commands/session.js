@@ -207,7 +207,7 @@ async function updateFields(receivedEmbed, sentMessage, reaction, user, type) {
 
 module.exports = {
   name: 'session',
-  aliases: ['termin'],
+  aliases: ['termin', 'meeting'],
   description: 'Startet eine Umfrage, wann die nächste Gaming-Session stattfinden soll.',
   usage:
     `[erster Tag] [Dauer]\n\n` +
@@ -257,30 +257,11 @@ module.exports = {
     } else if (args[0]) {
       if (args[0] === 'test') {
         return message.channel.send('Just testing, I see 🧐')
-      } else if (dateHandler.availableStartingWeekdays.some((day) => day.text === args[0].toLowerCase())) {
-        startingDay = dateHandler.getStartingDateByISO(
-          dateHandler.availableStartingWeekdays.find((day) => day.text === args[0].toLowerCase()).isoWeekday
-        )
-      } else if (dateHandler.availableRelativeStartingDays.some((day) => day.text === args[0].toLowerCase())) {
-        startingDay = dateHandler.getStartingDateByToday(
-          dateHandler.availableRelativeStartingDays.find((day) => day.text === args[0].toLowerCase()).addDays
-        )
       } else {
-        const inputDate = moment(args[0], 'DD.MM.YYYY')
-        if (!inputDate.isValid()) {
-          return message.channel.send(
-            `Ich kann mit dem Startdatum **${args[0]}** leider nichts anfangen, tut mir leid ${message.author} 🤔\nHast es auch ganz sicher in dem Format eingegeben: **DD.MM.YYYY**, also zum Beispiel **13.05.2021**? Alternativ kannst du auch einen Wochentag angeben, dann wird zum Beispiel der nächste Dienstag genommen. Wörter wie **heute**, **morgen** und **übermorgen** funktionieren auch 😇`
-          )
-        } else if (inputDate.isBefore(moment(), 'day')) {
-          return message.channel.send(
-            `Hey, Zeitreisender! Ein Startdatum in der Vergangenheit macht nicht so viel Sinn, oder? 😉 Ich tu mal so als hättest du das nicht geschrieben 😛`
-          )
-        } else if (inputDate.isAfter(moment().add(2, 'months'))) {
-          return message.channel.send(
-            `Eine gute Planung ist Gold wert, aber mehr als zwei Monate in die Zukunft muss man nun wirklich nicht planen, oder? 😉 Gib bitte ein Startdatum innerhalb der nächsten zwei Monate an 🙂`
-          )
-        } else {
-          startingDay = inputDate
+        try {
+          startingDay = await dateHandler.convertInputToDate(args[0])
+        } catch(error) {
+          return message.channel.send(error)
         }
       }
 

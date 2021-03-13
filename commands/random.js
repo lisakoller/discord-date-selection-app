@@ -1,8 +1,4 @@
-function getRandomInt(min, max) {
-  min = Math.ceil(min)
-  max = Math.floor(max)
-  return Math.floor(Math.random() * (max - min + 1)) + min
-}
+const miscFunctions = require('../utilities/misc')
 
 module.exports = {
   name: 'random',
@@ -19,14 +15,17 @@ module.exports = {
     if (!args[0] || !args[1]) {
       return message.channel.send('Bitte gib zumindest 2 Wörter an 🙂 Sonst ist es ja nicht wirklich random 😉')
     }
+
+    // push provided words into an array and select a random index
     let words = [args[0], args[1]]
     for (let i = 2; i < 9; i++) {
       if (args[i]) {
         words.push(args[i])
       }
     }
-    const index = getRandomInt(0, words.length - 1)
+    const index = miscFunctions.getRandomInt(0, words.length - 1)
 
+    // send the result with a countdown
     message.channel.send(`Und der Sieger ist...`)
     setTimeout(function () {
       message.channel.send(`Trommelwirbel 🥁 ...`)
