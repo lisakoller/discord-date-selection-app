@@ -75,10 +75,10 @@ async function addReminder(message, args) {
   reminderStart = reminderStart.hour(reminderTime.get('hour'))
   reminderStart = reminderStart.minute(reminderTime.get('minute'))
   reminderStart = reminderStart.second(0)
-  console.log("COMINBED INPUT: ", reminderDay)
+  console.log("COMINBED INPUT: ", moment.tz(reminderDay, 'Europe/Vienna'))
 
   // convert to normal date object for node-scheduler and create jobName
-  const date = reminderStart.toDate()
+  const date = moment.tz(reminderStart, 'Europe/Vienna').toDate()
   console.log("RESULTING JS DATE: ", date)
   const jobName = reminderStart.format('DD.MM.YYYY HH:mm')
 
