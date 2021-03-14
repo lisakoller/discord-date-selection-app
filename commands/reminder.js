@@ -52,7 +52,7 @@ async function addReminder(message, args) {
   }
 
   // try to convert the input to a valid time
-  const inputTime = moment.tz(`${reminderDay.format('DD.MM.YYYY')} ${args[2]}`, ' DD.MM.YYYY HH:mm', 'Europe/Vienna')
+  const inputTime = moment.tz(`${reminderDay.format('DD.MM.YYYY')} ${args[2]}`, 'DD.MM.YYYY HH:mm', 'Europe/Vienna')
   console.log("INPUT REMINDER TIME: ", inputTime)
   if (!inputTime.isValid()) {
     return message.channel.send(
