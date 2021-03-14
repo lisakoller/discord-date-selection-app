@@ -26,12 +26,12 @@ module.exports = {
       return message.reply('das Kommando kenne ich nicht!')
     }
 
+    // build information for the specific command
     data.push(`**Name:** ${command.name}`)
-
     if (command.aliases) data.push(`**Aliase:** ${command.aliases.join(', ')}`)
     if (command.description) data.push(`**Beschreibung:** ${command.description}`)
     if (command.usage) data.push(`**Verwendung:** ${prefix}${command.name} ${command.usage}`)
 
-    message.channel.send(data, { split: true })
+    return message.channel.send(data, { split: true })
   },
 }

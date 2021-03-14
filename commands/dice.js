@@ -6,8 +6,10 @@ module.exports = {
   description: 'Wirf den virtuellen Würfel.',
   args: false,
   execute(message, args) {
+    // get a random number between 1 and 6 (numbers of a dice)
     const result = miscFunctions.getRandomInt(1, 6)
 
+    // send the result with a countdown
     message.channel.send(`${message.author.username} wirft den Würfel des Schicksals 🎲 ...`)
     setTimeout(function () {
       message.channel.send(`${message.author.username} beobachtet ihn ganz genau 👀 ...`)
