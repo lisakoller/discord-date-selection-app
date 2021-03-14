@@ -1,7 +1,7 @@
 const dateHandler = require('../utilities/dateHandler')
 const dynamoDB = require('../utilities/dynamoDB')
 const schedule = require('node-schedule')
-const moment = require('moment')
+const moment = require('moment-timezone')
 moment.locale('de')
 
 /**
@@ -46,12 +46,14 @@ async function addReminder(message, args) {
   try {
     // try to convert the input to a valid date
     reminderDay = await dateHandler.convertInputToDate(args[1], false, 'weeks')
+    console.log("INPUT REMINDER DAY: ", reminderDay)
   } catch (errorMessage) {
     return message.channel.send(errorMessage)
   }
 
   // try to convert the input to a valid time
-  const inputTime = moment(args[2], 'HH:mm')
+  const inputTime = moment.tz(args[2], 'HH:mm', 'Europe/Vienna')
+  console.log("INPUT REMINDER TIME: ", inputTime)
   if (!inputTime.isValid()) {
     return message.channel.send(
       `Ich kann mit der Uhrzeit **${args[2]}** leider nichts anfangen, tut mir leid ${message.author} 🤔\nHast es auch ganz sicher in dem Format eingegeben: **HH:mm**, also zum Beispiel **18:15**? (wir verwenden 24 Stunden wie zivilisierte Menschen)`
@@ -73,9 +75,11 @@ async function addReminder(message, args) {
   reminderStart = reminderStart.hour(reminderTime.get('hour'))
   reminderStart = reminderStart.minute(reminderTime.get('minute'))
   reminderStart = reminderStart.second(0)
+  console.log("COMINBED INPUT: ", reminderDay)
 
   // convert to normal date object for node-scheduler and create jobName
   const date = reminderStart.toDate()
+  console.log("RESULTING JS DATE: ", date)
   const jobName = reminderStart.format('DD.MM.YYYY HH:mm')
 
   // check if no reminder is saved on the same day at the same time
@@ -236,8 +240,10 @@ module.exports = {
     `         [Nachricht]\n\n`,
   args: false, // for specific error message with hints,
   setReminders(reminders, client) {
+    console.log("server time ", new Date())
     // load reminders from dynamoDB into the node-scheduler
     reminders.forEach((reminder) => {
+      console.log("saved job in db date", reminder.date)
       const job = schedule.scheduleJob(reminder.jobName, reminder.date, function () {
         console.info(`The job ${reminder.jobName} is now executed!`, moment())
         dynamoDB.delete(reminder.jobName)
