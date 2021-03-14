@@ -52,7 +52,7 @@ async function addReminder(message, args) {
   }
 
   // try to convert the input to a valid time
-  const inputTime = moment.tz(args[2], 'HH:mm', 'Europe/Vienna')
+  const inputTime = moment.tz(`${reminderDay.format('DD.MM.YYYY')} ${args[2]}`, ' DD.MM.YYYY HH:mm', 'Europe/Vienna')
   console.log("INPUT REMINDER TIME: ", inputTime)
   if (!inputTime.isValid()) {
     return message.channel.send(
@@ -71,14 +71,14 @@ async function addReminder(message, args) {
   }
 
   // combine day and time moment objects
-  let reminderStart = reminderDay
-  reminderStart = reminderStart.hour(reminderTime.get('hour'))
+  let reminderStart = inputTime//reminderDay
+  /*reminderStart = reminderStart.hour(reminderTime.get('hour'))
   reminderStart = reminderStart.minute(reminderTime.get('minute'))
-  reminderStart = reminderStart.second(0)
-  console.log("COMINBED INPUT: ", moment.tz(reminderDay, 'Europe/Vienna'))
+  reminderStart = reminderStart.second(0)*/
+  console.log("COMINBED INPUT: ", reminderDay)
 
   // convert to normal date object for node-scheduler and create jobName
-  const date = moment.tz(reminderStart, 'Europe/Vienna').toDate()
+  const date = reminderStart.toDate()
   console.log("RESULTING JS DATE: ", date)
   const jobName = reminderStart.format('DD.MM.YYYY HH:mm')
 
