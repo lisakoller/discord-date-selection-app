@@ -46,14 +46,12 @@ async function addReminder(message, args) {
   try {
     // try to convert the input to a valid date
     reminderDay = await dateHandler.convertInputToDate(args[1], false, 'weeks')
-    console.log("INPUT REMINDER DAY: ", reminderDay)
   } catch (errorMessage) {
     return message.channel.send(errorMessage)
   }
 
   // try to convert the input to a valid time
   const inputTime = moment.tz(`${reminderDay.format('DD.MM.YYYY')} ${args[2]}`, 'DD.MM.YYYY HH:mm', 'Europe/Vienna')
-  console.log("INPUT REMINDER TIME: ", inputTime)
   if (!inputTime.isValid()) {
     return message.channel.send(
       `Ich kann mit der Uhrzeit **${args[2]}** leider nichts anfangen, tut mir leid ${message.author} 🤔\nHast es auch ganz sicher in dem Format eingegeben: **HH:mm**, also zum Beispiel **18:15**? (wir verwenden 24 Stunden wie zivilisierte Menschen)`
@@ -71,15 +69,10 @@ async function addReminder(message, args) {
   }
 
   // combine day and time moment objects
-  let reminderStart = inputTime//reminderDay
-  /*reminderStart = reminderStart.hour(reminderTime.get('hour'))
-  reminderStart = reminderStart.minute(reminderTime.get('minute'))
-  reminderStart = reminderStart.second(0)*/
-  console.log("COMINBED INPUT: ", reminderStart)
+  let reminderStart = reminderTime
 
   // convert to normal date object for node-scheduler and create jobName
   const date = reminderStart.toDate()
-  console.log("RESULTING JS DATE: ", date)
   const jobName = reminderStart.format('DD.MM.YYYY HH:mm')
 
   // check if no reminder is saved on the same day at the same time
@@ -233,17 +226,15 @@ module.exports = {
     `🔸 **[Datum]**: Tag, an dem der Reminder erscheinen soll.\n` +
     `       - Datum in der Form \`13.05.2021\`, ein Wochentag (automatisch der nächste z. B. \`Mittwoch\`) oder \`heute\`, \`morgen\`, \`übermorgen\`\n` +
     `🔸 **[Uhrzeit]**: Uhrzeit, an dem der Reminder erscheinen soll.\n` +
-    `       - Uhrzeit in der Form \`18:15\` (wir verwenden 24 Stunden wie zivilisierte Menschen)\n` +
+    `       - Uhrzeit in der Form \`18:15\` (wir verwenden 24 Stunden wie zivilisierte Menschen und gehen von UTC+1 aus)\n` +
     `🔸 **[Nachricht]**: Beliebige Nachricht, die mit dem Reminder ausgegeben wird.\n` +
     `       - Das Ergebnis sieht dann so aus:\n` +
     `         🔔 **Reminder** 🔔\n` +
     `         [Nachricht]\n\n`,
   args: false, // for specific error message with hints,
   setReminders(reminders, client) {
-    console.log("server time ", new Date())
     // load reminders from dynamoDB into the node-scheduler
     reminders.forEach((reminder) => {
-      console.log("saved job in db date", reminder.date)
       const job = schedule.scheduleJob(reminder.jobName, reminder.date, function () {
         console.info(`The job ${reminder.jobName} is now executed!`, moment())
         dynamoDB.delete(reminder.jobName)
