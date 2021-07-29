@@ -104,7 +104,7 @@ function getBasicEmbed(options) {
       name: 'Anonymous',
       icon_url: 'https://i.imgur.com/wSTFkRM.png',
     },
-    description: 'Wann würde es euch am besten passen?\nStandard-Startzeit: 20:00 Uhr 🕗',
+    description: 'Wann würde es euch am besten passen?\nStandard-Startzeit: 20:00 Uhr 🕗\n\nWenn ihr keine Zeit habt, reagiert mit dem ❌',
     thumbnail: {
       url: singlePandaUrl,
     },
@@ -396,6 +396,7 @@ module.exports = {
       options.forEach(async (option) => {
         await sentMessage.react(option['icon'])
       })
+      await sentMessage.react('❌')
     } catch (error) {
       console.error('One of the emojis failed to react.')
       message.channel.send(`Da hat etwas nicht funktioniert 🤯`)
