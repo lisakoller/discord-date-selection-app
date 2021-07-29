@@ -33,7 +33,8 @@ const emojiList = [
   '🇽',
   '🇾',
   '🇿',
-]
+  '❌',
+] 
 
 /**
  * get all available options for the session
@@ -60,6 +61,13 @@ function buildOptions(max, startingOn) {
     // add a day on every iteration
     startingOn.add(1, 'days')
   }
+
+  result.push({
+    icon: emojiList[emojiList.length-1],
+    text: `${emojiList[emojiList.length-1]}  Beschäftigt`,
+    weekday: 'Beschäftigt',
+    value: '-',
+  })
 
   return result
 }
@@ -104,14 +112,14 @@ function getBasicEmbed(options) {
       name: 'Anonymous',
       icon_url: 'https://i.imgur.com/wSTFkRM.png',
     },
-    description: 'Wann würde es euch am besten passen?\nStandard-Startzeit: 20:00 Uhr 🕗\n\nWenn ihr keine Zeit habt, reagiert mit dem ❌',
+    description: 'Wann würde es euch am besten passen?\nStandard-Startzeit: 20:00 Uhr 🕗\nWenn ihr keine Zeit habt, reagiert mit dem ❌',
     thumbnail: {
       url: singlePandaUrl,
     },
     fields: getBasicEmbedFields(options),
     timestamp: new Date(),
     footer: {
-      text: 'Version 1.0',
+      text: 'Version 1.1',
       icon_url: botIconUrl,
     },
   }
@@ -265,6 +273,9 @@ async function updateFields(receivedEmbed, sentMessage, reaction, user, type) {
     let result = receivedEmbed.fields.map((entry, index) => {
       let o = Object.assign({}, entry)
 
+      console.log("Length: ", receivedEmbed.fields.length)
+      console.log("index: ", index)
+
       // the first field contains the top answers that need to be updated
       if (index === 0) {
         o.value = getTopAnswer(sentMessage, reaction)
@@ -273,6 +284,8 @@ async function updateFields(receivedEmbed, sentMessage, reaction, user, type) {
         // index-2 because there are 2 "standard" fields that need to be subtracted (intro + blank space; see basicEmbedFields)
       } else if (index >= 2 && reaction.emoji.name === emojiList[index - 2]) {
         // depending on the type add the user or remove the user from the list
+        o.value = type === 'add' ? addUser(o.value, user) : removeUser(o.value, user)
+      } else if (index === receivedEmbed.fields.length-1 && reaction.emoji.name === emojiList[emojiList.length-1]) {
         o.value = type === 'add' ? addUser(o.value, user) : removeUser(o.value, user)
       }
       return o
@@ -396,7 +409,6 @@ module.exports = {
       options.forEach(async (option) => {
         await sentMessage.react(option['icon'])
       })
-      await sentMessage.react('❌')
     } catch (error) {
       console.error('One of the emojis failed to react.')
       message.channel.send(`Da hat etwas nicht funktioniert 🤯`)
