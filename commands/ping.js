@@ -5,9 +5,9 @@ module.exports = {
     .setName('ping')
     .setDescription('Easy way to check, whether the bot is online.')
     .setDescriptionLocalizations({
-      de: 'Ein einfacher Weg um zu sehen, ob der Bot online ist.'
+      de: 'Ein einfacher Weg um zu sehen, ob der Bot online ist.',
     }),
   async execute(interaction) {
     await interaction.reply('Pong! 🏓')
-  }
+  },
 }

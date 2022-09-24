@@ -10,7 +10,7 @@ const de = require('./utilities/locales/de.json')
 i18next.init({
   fallbackLng: 'en',
   debug: false,
-  resources: { en, de }
+  resources: { en, de },
 })
 
 const token = process.env.TOKEN
@@ -18,22 +18,20 @@ const guildID = process.env.GUILD_ID
 const clientID = process.env.CLIENT_ID
 
 const myIntents = new IntentsBitField()
-myIntents.add(IntentsBitField.Flags.Guilds,
-              IntentsBitField.Flags.GuildMessages,
-              IntentsBitField.Flags.GuildMessageReactions,
-              IntentsBitField.Flags.MessageContent,
-              IntentsBitField.Flags.DirectMessages,
-              IntentsBitField.Flags.GuildPresences,
-              IntentsBitField.Flags.GuildMembers)
+myIntents.add(
+  IntentsBitField.Flags.Guilds,
+  IntentsBitField.Flags.GuildMessages,
+  IntentsBitField.Flags.GuildMessageReactions,
+  IntentsBitField.Flags.MessageContent,
+  IntentsBitField.Flags.DirectMessages,
+  IntentsBitField.Flags.GuildPresences,
+  IntentsBitField.Flags.GuildMembers
+)
 
 // create new client
 const client = new Client({
   intents: myIntents,
-  partials: [
-    Partials.Message,
-    Partials.Channel,
-    Partials.Reaction
-  ]
+  partials: [Partials.Message, Partials.Channel, Partials.Reaction],
 })
 
 client.once('ready', () => {
@@ -51,12 +49,12 @@ for (const file of commandFiles) {
   client.commands.set(command.data.name, command)
 }
 
-client.on('interactionCreate', async interaction => {
+client.on('interactionCreate', async (interaction) => {
   if (!interaction.isChatInputCommand()) return
 
   const command = interaction.client.commands.get(interaction.commandName)
 
-  if(!command) return
+  if (!command) return
 
   try {
     await command.execute(interaction)
@@ -67,58 +65,64 @@ client.on('interactionCreate', async interaction => {
 })
 
 // react to buttons
-client.on('interactionCreate', async interaction => {
+client.on('interactionCreate', async (interaction) => {
   if (!interaction.isButton()) return
 
   try {
-    if(interaction.customId === 'removeReminders') {
+    if (interaction.customId === 'removeReminders') {
       const command = interaction.client.commands.get('reminder')
-      if(!command) return
-  
+      if (!command) return
+
       await command.removeAllReminders(interaction)
-    } else if(interaction.customId === 'keepReminders') {
-      await interaction.update({ content: i18next.t('reminder.clear.no_reply', { lng: interaction.locale }), components: [] })
-    } else if(interaction.customId === 'removeReminder') {
+    } else if (interaction.customId === 'keepReminders') {
+      await interaction.update({
+        content: i18next.t('reminder.clear.no_reply', { lng: interaction.locale }),
+        components: [],
+      })
+    } else if (interaction.customId === 'removeReminder') {
       const command = interaction.client.commands.get('reminder')
-      if(!command) return
+      if (!command) return
 
       await command.removeReminder(interaction)
-    } else if(interaction.customId === 'keepReminder') {
-      await interaction.update({ content: i18next.t('reminder.remove.no_reply', { lng: interaction.locale }), components: [] })
+    } else if (interaction.customId === 'keepReminder') {
+      await interaction.update({
+        content: i18next.t('reminder.remove.no_reply', { lng: interaction.locale }),
+        components: [],
+      })
     }
-  } catch(error) {
+  } catch (error) {
     console.error(error)
     await interaction.reply({ content: i18next.t('errors.general', { lng: interaction.locale }), ephemeral: true })
   }
 })
 
 // react to select menus
-client.on('interactionCreate', async interaction => {
-  if(!interaction.isSelectMenu()) return
+client.on('interactionCreate', async (interaction) => {
+  if (!interaction.isSelectMenu()) return
 
   try {
-    if(interaction.customId === 'removeReminderOptions') {
+    if (interaction.customId === 'removeReminderOptions') {
       const command = interaction.client.commands.get('reminder')
-      if(!command) return
+      if (!command) return
 
       await command.confirmDelete(interaction)
     }
-  } catch(error) {
+  } catch (error) {
     console.error(error)
     await interaction.reply({ content: i18next.t('errors.general', { lng: interaction.locale }), ephemeral: true })
   }
 })
 
 // react to autocomplete
-client.on('interactionCreate', async interaction => {
+client.on('interactionCreate', async (interaction) => {
   if (!interaction.isAutocomplete()) return
 
-	if (interaction.commandName === 'session' || interaction.commandName === 'reminder') {
-		const focusedOption = interaction.options.getFocused(true)
-		let choices
+  if (interaction.commandName === 'session' || interaction.commandName === 'reminder') {
+    const focusedOption = interaction.options.getFocused(true)
+    let choices
 
-		if (focusedOption.name === 'date') {
-			choices = [
+    if (focusedOption.name === 'date') {
+      choices = [
         'nächster Montag - next monday',
         'nächster Dienstag - next tuesday',
         'nächster Mittwoch - next wednesday',
@@ -128,10 +132,10 @@ client.on('interactionCreate', async interaction => {
         'nächster Sonntag - next sunday',
         'heute - today',
         'morgen - tomorrow',
-        'übermorgen - day after tomorrow'
+        'übermorgen - day after tomorrow',
       ]
-		} else if (focusedOption.name === 'time') {
-			choices = [
+    } else if (focusedOption.name === 'time') {
+      choices = [
         '10:00',
         '11:00',
         '12:00',
@@ -158,11 +162,14 @@ client.on('interactionCreate', async interaction => {
         '21:00',
         '22:00',
       ]
-		}
+    }
 
-    const filtered = choices.filter(choice => choice.startsWith(focusedOption.value))
+    const filtered = choices.filter((choice) => choice.startsWith(focusedOption.value))
     await interaction.respond(
-      filtered.map(choice => ({ name: choice, value: focusedOption.name === 'date' ? choice.replace('nächster ', '').split(' ')[0].toLowerCase() : choice })),
+      filtered.map((choice) => ({
+        name: choice,
+        value: focusedOption.name === 'date' ? choice.replace('nächster ', '').split(' ')[0].toLowerCase() : choice,
+      }))
     )
   }
 })
@@ -207,7 +214,7 @@ async function handleReactions(reaction, user, type) {
 
   let fullmessage
 
-// When a reaction is received, check if the structure is partial -> load full message
+  // When a reaction is received, check if the structure is partial -> load full message
   if (reaction.partial) {
     try {
       await reaction.fetch()

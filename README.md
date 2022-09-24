@@ -1,6 +1,6 @@
 # Discord-Date-Selection-Bot
 
-Just my first try making a bot for Discord. It's intended for me and a bunch of friends, therefore the text in the embeds is currently only available in German. The slashcommands themselves as well as all instructions are in English too. 
+Just my first try making a bot for Discord. It's intended for me and a bunch of friends, therefore the text in the embeds is currently only available in German. The slashcommands themselves as well as all instructions are in English too.
 
 ## Usable commands
 

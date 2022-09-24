@@ -36,7 +36,7 @@ const emojiList = [
   '🇾',
   '🇿',
   '❌',
-] 
+]
 
 /**
  * get all available options for the session
@@ -65,8 +65,8 @@ function buildOptions(max, startingOn) {
   }
 
   result.push({
-    icon: emojiList[emojiList.length-1],
-    text: `${emojiList[emojiList.length-1]}  Beschäftigt`,
+    icon: emojiList[emojiList.length - 1],
+    text: `${emojiList[emojiList.length - 1]}  Beschäftigt`,
     weekday: 'Beschäftigt',
     value: '-',
   })
@@ -121,7 +121,7 @@ function getBasicEmbed(options, locale) {
     .setFooter({
       text: 'Version 2.0',
       iconURL: botIconUrl,
-  })
+    })
 }
 
 /**
@@ -174,7 +174,7 @@ function removeUser(value, user) {
  * @returns formatted string of most reacted options
  */
 function getTopAnswer(sentMessage, reaction) {
-  let reactions = sentMessage.reactions.cache//.array()
+  let reactions = sentMessage.reactions.cache //.array()
 
   // how often was every emoji selected/reacted? (includes the bot itself)
   let counts = []
@@ -281,7 +281,7 @@ async function updateFields(receivedEmbed, sentMessage, reaction, user, type) {
       } else if (index >= 2 && reaction.emoji.name === emojiList[index - 2]) {
         // depending on the type add the user or remove the user from the list
         o.value = type === 'add' ? String(addUser(o.value, user)) : String(removeUser(o.value, user))
-      } else if (index === receivedEmbed.fields.length-1 && reaction.emoji.name === emojiList[emojiList.length-1]) {
+      } else if (index === receivedEmbed.fields.length - 1 && reaction.emoji.name === emojiList[emojiList.length - 1]) {
         o.value = type === 'add' ? String(addUser(o.value, user)) : String(removeUser(o.value, user))
       }
       return o
@@ -295,128 +295,130 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName('session')
     .setNameLocalizations({
-      de: 'treffen'
+      de: 'treffen',
     })
     .setDescription('Start a poll when the next gaming-session should take place.')
     .setDescriptionLocalizations({
-      de: 'Startet eine Umfrage, wann die nächste Gaming-Session stattfinden soll.'
+      de: 'Startet eine Umfrage, wann die nächste Gaming-Session stattfinden soll.',
     })
-    .addStringOption((option) => option
-      .setName('date')
-      .setNameLocalizations({
-        de: 'startdatum'
-      })
-      .setDescription('First day to be proposed. (DD.MM.YYYY) (Default: next monday)')
-      .setDescriptionLocalizations({
-        de: 'Erster Tag, der vorgeschlagen wird. (DD.MM.YYYY) (Standard: nächster Montag)'
-      })
-      .setRequired(false)
-      .setAutocomplete(true)
-    )
-    .addIntegerOption((option) => option
-      .setName('duration')
-      .setNameLocalizations({
-        de: 'dauer'
-      })
-      .setDescription('How many days to choose from.')
-      .setDescriptionLocalizations({
-        de: 'Wie viele Tage vorgeschlagen werden. (Standard: 7)'
-      })
-      .setRequired(false)
-      .addChoices(
-        { name: '2 tage - days', value: 2 },
-        { name: '3 tage - days', value: 3 },
-        { name: '4 tage - days', value: 4 },
-        { name: '5 tage - days', value: 5 },
-        { name: '6 tage - days', value: 6 },
-        { name: '7 tage - days', value: 7 },
-        { name: '8 tage - days', value: 8 },
-        { name: '9 tage - days', value: 9 },
-        { name: '10 tage - days', value: 10 },
-        { name: '11 tage - days', value: 11 },
-        { name: '12 tage - days', value: 12 },
-        { name: '13 tage - days', value: 13 },
-        { name: '14 tage - days', value: 14 },
-      )
-    ),
-    async handleReaction(message, reaction, user, type) {
-      try {
-        // only do something if the emoji is relevant
-        if (emojiList.includes(reaction.emoji.name)) {
-          const receivedEmbed = await message.embeds[0]
-  
-          // update the fields because of the new reaction
-          let fields = await updateFields(receivedEmbed, message, reaction, user, type)
-  
-          // update the embed
-          const updatedEmbed = new EmbedBuilder()
-            .setColor(receivedEmbed.color)
-            .setTitle(receivedEmbed.title)
-            .setAuthor({
-              name: receivedEmbed.author.name,
-              iconURL: receivedEmbed.author.iconURL,
-            })
-            .setDescription(receivedEmbed.description)
-            .setThumbnail(receivedEmbed.thumbnail.url)
-            .addFields(fields)
-            .setTimestamp(new Date(receivedEmbed.timestamp))
-            .setFooter({
-              text: receivedEmbed.footer.text,
-              iconURL: receivedEmbed.footer.iconURL,
-            })
-
-          // edit the original message
-          message.edit({ embeds: [updatedEmbed] })
-        } else {
-          console.info('Wrong reaction dude 🙄')
-        }
-      } catch (error) {
-        console.error('Something went wrong: ', error)
-        // TODO locale?
-        message.channel.send({ content: i18next.t('errors.general', { lng: 'de' })})
-      }
-    },
-    async execute(interaction) {
-      let inputStartingDay = interaction.options.getString('date')
-      let inputNDays = interaction.options.getInteger('duration')
-      let startingDay
-      let nDays = inputNDays ? inputNDays : 7
-
-      if (!inputStartingDay) {
-        startingDay = dateHandler.getStartingDateByISO()
-      } else {
-        try {
-          // try to convert the input to a valid date
-          startingDay = await dateHandler.convertInputToDate(inputStartingDay, undefined, undefined, interaction)
-        } catch (errorMessage) {
-          return interaction.reply({ content: errorMessage, ephemeral: true })
-        }
-      }
-
-      // build all options based on the starting day and number of days that should be provided
-      const options = buildOptions(nDays, startingDay)
-  
-      // build the embed and replace the placeholders
-      const embed = getBasicEmbed(options, interaction.locale)
-      embed.setAuthor({
-        name: interaction.member.nickname,
-        iconURL: interaction.member.displayAvatarURL() //icon? avatarURL?
-      })
-  
-      try {
-        // send the message in the same channel
-        let sentMessage = await interaction.reply({ embeds: [embed], fetchReply: true })
-  
-        // react with all emojis in order
-        options.forEach(async (option) => {
-          await sentMessage.react(option['icon'])
+    .addStringOption((option) =>
+      option
+        .setName('date')
+        .setNameLocalizations({
+          de: 'startdatum',
         })
-      } catch (error) {
-        console.error('One of the emojis failed to react.')
-        interaction.followUp({ content: i18next.t('errors.general', { lng: interaction.locale }), ephemeral: true })
+        .setDescription('First day to be proposed. (DD.MM.YYYY) (Default: next monday)')
+        .setDescriptionLocalizations({
+          de: 'Erster Tag, der vorgeschlagen wird. (DD.MM.YYYY) (Standard: nächster Montag)',
+        })
+        .setRequired(false)
+        .setAutocomplete(true)
+    )
+    .addIntegerOption((option) =>
+      option
+        .setName('duration')
+        .setNameLocalizations({
+          de: 'dauer',
+        })
+        .setDescription('How many days to choose from.')
+        .setDescriptionLocalizations({
+          de: 'Wie viele Tage vorgeschlagen werden. (Standard: 7)',
+        })
+        .setRequired(false)
+        .addChoices(
+          { name: '2 tage - days', value: 2 },
+          { name: '3 tage - days', value: 3 },
+          { name: '4 tage - days', value: 4 },
+          { name: '5 tage - days', value: 5 },
+          { name: '6 tage - days', value: 6 },
+          { name: '7 tage - days', value: 7 },
+          { name: '8 tage - days', value: 8 },
+          { name: '9 tage - days', value: 9 },
+          { name: '10 tage - days', value: 10 },
+          { name: '11 tage - days', value: 11 },
+          { name: '12 tage - days', value: 12 },
+          { name: '13 tage - days', value: 13 },
+          { name: '14 tage - days', value: 14 }
+        )
+    ),
+  async handleReaction(message, reaction, user, type) {
+    try {
+      // only do something if the emoji is relevant
+      if (emojiList.includes(reaction.emoji.name)) {
+        const receivedEmbed = await message.embeds[0]
+
+        // update the fields because of the new reaction
+        let fields = await updateFields(receivedEmbed, message, reaction, user, type)
+
+        // update the embed
+        const updatedEmbed = new EmbedBuilder()
+          .setColor(receivedEmbed.color)
+          .setTitle(receivedEmbed.title)
+          .setAuthor({
+            name: receivedEmbed.author.name,
+            iconURL: receivedEmbed.author.iconURL,
+          })
+          .setDescription(receivedEmbed.description)
+          .setThumbnail(receivedEmbed.thumbnail.url)
+          .addFields(fields)
+          .setTimestamp(new Date(receivedEmbed.timestamp))
+          .setFooter({
+            text: receivedEmbed.footer.text,
+            iconURL: receivedEmbed.footer.iconURL,
+          })
+
+        // edit the original message
+        message.edit({ embeds: [updatedEmbed] })
+      } else {
+        console.info('Wrong reaction dude 🙄')
       }
-  
-      // tell everyone that a new poll has been posted
-      interaction.channel.send(i18next.t('session.message', { lng: interaction.locale }))
+    } catch (error) {
+      console.error('Something went wrong: ', error)
+      // TODO locale?
+      message.channel.send({ content: i18next.t('errors.general', { lng: 'de' }) })
     }
+  },
+  async execute(interaction) {
+    let inputStartingDay = interaction.options.getString('date')
+    let inputNDays = interaction.options.getInteger('duration')
+    let startingDay
+    let nDays = inputNDays ? inputNDays : 7
+
+    if (!inputStartingDay) {
+      startingDay = dateHandler.getStartingDateByISO()
+    } else {
+      try {
+        // try to convert the input to a valid date
+        startingDay = await dateHandler.convertInputToDate(inputStartingDay, undefined, undefined, interaction)
+      } catch (errorMessage) {
+        return interaction.reply({ content: errorMessage, ephemeral: true })
+      }
+    }
+
+    // build all options based on the starting day and number of days that should be provided
+    const options = buildOptions(nDays, startingDay)
+
+    // build the embed and replace the placeholders
+    const embed = getBasicEmbed(options, interaction.locale)
+    embed.setAuthor({
+      name: interaction.member.nickname,
+      iconURL: interaction.member.displayAvatarURL(), //icon? avatarURL?
+    })
+
+    try {
+      // send the message in the same channel
+      let sentMessage = await interaction.reply({ embeds: [embed], fetchReply: true })
+
+      // react with all emojis in order
+      options.forEach(async (option) => {
+        await sentMessage.react(option['icon'])
+      })
+    } catch (error) {
+      console.error('One of the emojis failed to react.')
+      interaction.followUp({ content: i18next.t('errors.general', { lng: interaction.locale }), ephemeral: true })
+    }
+
+    // tell everyone that a new poll has been posted
+    interaction.channel.send(i18next.t('session.message', { lng: interaction.locale }))
+  },
 }

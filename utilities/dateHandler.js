@@ -139,7 +139,13 @@ module.exports = {
         const inputDate = moment(inputString, 'DD.MM.YYYY')
         // check whether the parsed date is valid
         if (!inputDate.isValid()) {
-          reject(i18next.t('errors.date.format', { date: inputString, nickname: interaction.member.nickname, lng: interaction.locale }))
+          reject(
+            i18next.t('errors.date.format', {
+              date: inputString,
+              nickname: interaction.member.nickname,
+              lng: interaction.locale,
+            })
+          )
           // check if further checking is should be skipped (whether it is in the past or too far in the future)
         } else if (skipChecking) {
           resolve(inputDate)
@@ -148,7 +154,15 @@ module.exports = {
           reject(i18next.t('errors.date.past', { lng: interaction.locale }))
           // check if the date is too far in the future
         } else if (inputDate.isAfter(moment().add(2, futureUnit))) {
-          reject(i18next.t('errors.date.future', { futureUnit: futureUnit === 'months' ? i18next.t('errors.date.months', { lng: interaction.locale }) : i18next.t('errors.date.weeks', { lng: interaction.locale }), lng: interaction.locale }))
+          reject(
+            i18next.t('errors.date.future', {
+              futureUnit:
+                futureUnit === 'months'
+                  ? i18next.t('errors.date.months', { lng: interaction.locale })
+                  : i18next.t('errors.date.weeks', { lng: interaction.locale }),
+              lng: interaction.locale,
+            })
+          )
           // date is valid and in the correct timeframe
         } else {
           resolve(inputDate)
