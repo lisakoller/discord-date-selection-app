@@ -302,7 +302,7 @@ module.exports = {
       de: 'Startet eine Umfrage, wann die nächste Gaming-Session stattfinden soll.'
     })
     .addStringOption((option) => option
-      .setName('starting_day')
+      .setName('date')
       .setNameLocalizations({
         de: 'startdatum'
       })
@@ -377,7 +377,7 @@ module.exports = {
       }
     },
     async execute(interaction) {
-      let inputStartingDay = interaction.options.getString('starting_day')
+      let inputStartingDay = interaction.options.getString('date')
       let inputNDays = interaction.options.getInteger('duration')
       let startingDay
       let nDays = inputNDays ? inputNDays : 7

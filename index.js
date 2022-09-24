@@ -113,11 +113,11 @@ client.on('interactionCreate', async interaction => {
 client.on('interactionCreate', async interaction => {
   if (!interaction.isAutocomplete()) return
 
-	if (interaction.commandName === 'session') {
+	if (interaction.commandName === 'session' || interaction.commandName === 'reminder') {
 		const focusedOption = interaction.options.getFocused(true)
 		let choices
 
-		if (focusedOption.name === 'starting_day') {
+		if (focusedOption.name === 'date') {
 			choices = [
         'nächster Montag - next monday',
         'nächster Dienstag - next tuesday',
@@ -130,13 +130,41 @@ client.on('interactionCreate', async interaction => {
         'morgen - tomorrow',
         'übermorgen - day after tomorrow'
       ]
+		} else if (focusedOption.name === 'time') {
+			choices = [
+        '10:00',
+        '11:00',
+        '12:00',
+        '13:00',
+        '14:00',
+        '15:00',
+        '15:30',
+        '16:00',
+        '16:30',
+        '17:00',
+        '17:30',
+        '18:00',
+        '18:15',
+        '18:30',
+        '18:45',
+        '19:00',
+        '19:15',
+        '19:30',
+        '19:45',
+        '20:00',
+        '20:15',
+        '20:30',
+        '20:45',
+        '21:00',
+        '22:00',
+      ]
 		}
 
-		const filtered = choices.filter(choice => choice.startsWith(focusedOption.value))
-		await interaction.respond(
-			filtered.map(choice => ({ name: choice, value: choice.replace('nächster ', '').split(' ')[0].toLowerCase() })),
-		)
-	}
+    const filtered = choices.filter(choice => choice.startsWith(focusedOption.value))
+    await interaction.respond(
+      filtered.map(choice => ({ name: choice, value: focusedOption.name === 'date' ? choice.replace('nächster ', '').split(' ')[0].toLowerCase() : choice })),
+    )
+  }
 })
 
 client.on('ready', async () => {

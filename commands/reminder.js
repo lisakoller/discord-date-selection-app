@@ -131,78 +131,6 @@ async function removeReminderOptions(interaction) {
 }
 
 /**
- * remove a reminder
- * @param {discord interaction} interaction interaction that contained the command
- * @param {array} args input date and time by the user
- * @returns a message that is sent to the channel
- */
-async function removeReminderLegacy(interaction, args) {
-  let reminderDay
-  let reminderTime
-
-  try {
-    // try to convert the input to a valid date
-    reminderDay = await dateHandler.convertInputToDate(args[0], true, undefined, interaction)
-  } catch (errorMessage) {
-    return interaction.reply({ content: errorMessage, ephemeral: true })
-  }
-
-  // try to convert the input to a valid time
-  const inputTime = moment(args[1], 'HH:mm')
-  if (!inputTime.isValid()) {
-    return interaction.reply({ content: i18next.t('errors.time.format', { nickname: interaction.member.nickname, time: args[1], lng: interaction.locale}), ephemeral: true })
-
-    // time is okay
-  } else {
-    reminderTime = inputTime
-  }
-
-  try {
-    const jobName = `${reminderDay.format('DD.MM.YYYY')} ${reminderTime.format('HH:mm')}`
-    let job = schedule.scheduledJobs[jobName]
-
-    // reminder could not be found
-    if (job === undefined) {
-      await interaction.reply(i18next.t('reminder.remove.none_saved', { lng: interaction.locale}))
-      listReminders(interaction, true)
-      return
-
-      // reminder is deleted locally and in dynamoDB
-    } else {
-      job.cancel()
-      dynamoDB.delete(jobName)
-    }
-  } catch (e) {
-    console.error(e)
-    return interaction.reply({ content: i18next.t('errors.general', { lng: interaction.locale}), ephemeral: true })
-  }
-
-  // tell the user that removing the reminder was successful
-  return interaction.reply(i18next.t('reminder.remove.reply', { date: reminderDay.format('DD. MMMM YYYY'), time: reminderTime.format('HH:mm'), lng: interaction.locale}))
-}
-
-/**
- * delete all saved reminders
- * @param {discord message object} message message that contained the command
- * @param {array} args input by the user
- * @returns a message that is sent to the channel
- */
-/*async function removeAllReminders(interaction, args) {
-  // delete local reminders
-  let result = `Die folgenden Reminder wurden gelöscht:\n`
-  Object.entries(jobs).forEach(([name, job]) => {
-    result += `🗓️ ${name}\n`
-    job.cancel()
-  })
-
-  // delete reminders in dynamoDB
-  dynamoDB.deleteAll()
-
-  // tell the user that removing all reminders was successful
-  return await interaction.reply(result)
-}*/
-
-/**
  * confirm to delete all saved reminders
  * @param {discord interaction} interaction interaction that contained the command
  */
@@ -241,7 +169,7 @@ module.exports = {
     .setDescriptionLocalizations({
       de: 'Lass eine Meldung zu einem bestimmten Zeitpunkt erscheinen.'
     })
-    .addSubcommandGroup((group) => group
+    .addSubcommand((subcommand) => subcommand
       .setName('add')
       .setNameLocalizations({
         de: 'hinzufügen'
@@ -250,179 +178,62 @@ module.exports = {
       .setDescriptionLocalizations({
         de: 'Einen neuen Reminder erstellen.'
       })
-      .addSubcommand((subcommand) => subcommand
-        .setName('by_date')
-        .setNameLocalizations({
-          de: 'per_datum'
-        })
-        .setDescription('Create a new reminder by providing a specific date.')
-        .setDescriptionLocalizations({
-          de: 'Einen neunem Reminder über ein bestimmtes Datum erstellen.'
-        })
-        .addStringOption((option) => option
-          .setName('date')
-          .setNameLocalizations({
-            de: 'datum'
-          })
-          .setDescription('Date on which the reminder is sent. (DD.MM.YYYY)')
-          .setDescriptionLocalizations({
-            de: 'Datum, an dem der Reminder ausgelöst wird. (DD.MM.YYYY)'
-          })
-          .setRequired(true)
-        )
-        .addStringOption((option) => option
-          .setName('time')
-          .setNameLocalizations({
-            de: 'uhrzeit'
-          })
-          .setDescription('Time at which the reminder is sent. (HH:mm)')
-          .setDescriptionLocalizations({
-            de: 'Uhrzeit, zu der der Reminder ausgelöst wird. (HH:mm)'
-          })
-          .setRequired(true)
-        )
-        .addStringOption((option) => option
-          .setName('message')
-          .setNameLocalizations({
-            de: 'nachricht'
-          })
-          .setDescription('Optional message to be displayed.')
-          .setDescriptionLocalizations({
-            de: 'Optionale Nachricht, die angezeigt wird.'
-          })
-          .setRequired(false)
-        )
-        .addMentionableOption((option) => option
-          .setName('mention')
-          .setNameLocalizations({
-            de: 'erwähnen'
-          })
-          .setDescription('Is there a role or person you want to dedicate this reminder to? (default: @everyone)')
-          .setDescriptionLocalizations({
-            de: 'Gibt es eine Rolle oder Person, der du diese Erinnerung widmen möchtest? (Standard: @everyone)'
-          })
-          .setRequired(false)
-        )
-        .addChannelOption((option) => option
-          .setName('channel')
-          .setNameLocalizations({
-            de: 'channel'
-          })
-          .setDescription('Channel in which the message is displayed.')
-          .setDescriptionLocalizations({
-            de: 'Channel, in dem die Erinnerung angezeigt wird.'
-          })
-          .setRequired(false)
-        )
-      )
-      .addSubcommand((subcommand) => subcommand
-        .setName('by_day')
-        .setNameLocalizations({
-          de: 'per_tag'
-        })
-        .setDescription('Create a new reminder by providing a relative day.')
-        .setDescriptionLocalizations({
-          de: 'Einen neunem Reminder über einen relativen Tag erstellen.'
-        })
-        .addStringOption((option) => option
-          .setName('date')
-          .setNameLocalizations({
-            de: 'datum'
-          })
-          .setDescription('Date on which the reminder is sent.')
-          .setDescriptionLocalizations({
-            de: 'Datum, an dem der Reminder ausgelöst wird.'
-          })
-          .setRequired(true)
-          .addChoices(
-            { name: "nächster Montag - next monday", value: "montag" },
-            { name: "nächster Dienstag - next tuesday", value: "dienstag" },
-            { name: "nächster Mittwoch - next wednesday", value: "mittwoch" },
-            { name: "nächster Donnerstag - next thursday", value: "donnerstag" },
-            { name: "nächster Freitag - next friday", value: "freitag" },
-            { name: "nächster Samstag - next saturday", value: "samstag" },
-            { name: "nächster Sonntag - next sunday", value: "sonntag" },
-            { name: "heute - today", value: "heute" },
-            { name: "morgen - tomorrow", value: "morgen" },
-            { name: "übermorgen - day after tomorrow", value: "übermorgen" },
-          )
-        )
-        .addStringOption((option) => option
-          .setName('time')
-          .setNameLocalizations({
-            de: 'uhrzeit'
-          })
-          .setDescription('Time at which the reminder is sent. (HH:mm)')
-          .setDescriptionLocalizations({
-            de: 'Uhrzeit, zu der der Reminder ausgelöst wird. (HH:mm)'
-          })
-          .setRequired(true)
-        )
-        .addStringOption((option) => option
-          .setName('message')
-          .setNameLocalizations({
-            de: 'nachricht'
-          })
-          .setDescription('Optional message to be displayed.')
-          .setDescriptionLocalizations({
-            de: 'Optionale Nachricht, die angezeigt wird.'
-          })
-          .setRequired(false)
-        )
-        .addMentionableOption((option) => option
-          .setName('mention')
-          .setNameLocalizations({
-            de: 'erwähnen'
-          })
-          .setDescription('Is there a role or person you want to dedicate this reminder to? (default: @everyone)')
-          .setDescriptionLocalizations({
-            de: 'Gibt es eine Rolle oder Person, der du diese Erinnerung widmen möchtest? (Standard: @everyone)'
-          })
-          .setRequired(false)
-        )
-        .addChannelOption((option) => option
-          .setName('channel')
-          .setNameLocalizations({
-            de: 'channel'
-          })
-          .setDescription('Channel in which the message is displayed.')
-          .setDescriptionLocalizations({
-            de: 'Channel, in dem die Erinnerung angezeigt wird.'
-          })
-          .setRequired(false)
-        )
-      )
-    )
-    .addSubcommand((subcommand) => subcommand
-      .setName('remove_legacy')
-      .setNameLocalizations({
-        de: 'löschen_legacy'
-      })
-      .setDescription('Remove a scheduled reminder. (legacy version)')
-      .setDescriptionLocalizations({
-        de: 'Löscht einen vorgemerkten Reminder. (Legacy-Version)'
-      })
       .addStringOption((option) => option
         .setName('date')
         .setNameLocalizations({
           de: 'datum'
         })
-        .setDescription('Date for which the reminder is scheduled.')
+        .setDescription('Date on which the reminder is sent. (DD.MM.YYYY)')
         .setDescriptionLocalizations({
-          de: 'Datum, an dem der Reminder ausgelöst wird.'
+          de: 'Datum, an dem der Reminder ausgelöst wird. (DD.MM.YYYY)'
         })
         .setRequired(true)
+        .setAutocomplete(true)
       )
       .addStringOption((option) => option
         .setName('time')
         .setNameLocalizations({
           de: 'uhrzeit'
         })
-        .setDescription('Time for which the reminder is scheduled.')
+        .setDescription('Time at which the reminder is sent. (HH:mm)')
         .setDescriptionLocalizations({
-          de: 'Uhrzeit, zu der der Reminder ausgelöst wird.'
+          de: 'Uhrzeit, zu der der Reminder ausgelöst wird. (HH:mm)'
         })
         .setRequired(true)
+        .setAutocomplete(true)
+      )
+      .addStringOption((option) => option
+        .setName('message')
+        .setNameLocalizations({
+          de: 'nachricht'
+        })
+        .setDescription('Optional message to be displayed.')
+        .setDescriptionLocalizations({
+          de: 'Optionale Nachricht, die angezeigt wird.'
+        })
+        .setRequired(false)
+      )
+      .addMentionableOption((option) => option
+        .setName('mention')
+        .setNameLocalizations({
+          de: 'erwähnen'
+        })
+        .setDescription('Is there a role or person you want to dedicate this reminder to? (default: @everyone)')
+        .setDescriptionLocalizations({
+          de: 'Gibt es eine Rolle oder Person, der du diese Erinnerung widmen möchtest? (Standard: @everyone)'
+        })
+        .setRequired(false)
+      )
+      .addChannelOption((option) => option
+        .setName('channel')
+        .setNameLocalizations({
+          de: 'channel'
+        })
+        .setDescription('Channel in which the message is displayed.')
+        .setDescriptionLocalizations({
+          de: 'Channel, in dem die Erinnerung angezeigt wird.'
+        })
+        .setRequired(false)
       )
     )
     .addSubcommand((subcommand) => subcommand
@@ -525,17 +336,9 @@ module.exports = {
   },
   async execute(interaction) {
     // check what the user wants to do
-    if(interaction.options.getSubcommandGroup() === 'add') {
-      if(interaction.options.getSubcommand() === 'by_date') {
-        // create a new reminder
-        addReminder(interaction, [interaction.options.getString('date'), interaction.options.getString('time'), interaction.options.getString('message'), interaction.options.getMentionable('mention'), interaction.options.getChannel('channel')])
-      } else if(interaction.options.getSubcommand() === 'by_day') {
-        // create a new reminder
-        addReminder(interaction, [interaction.options.getString('date'), interaction.options.getString('time'), interaction.options.getString('message'), interaction.options.getMentionable('mention'), interaction.options.getChannel('channel')])
-      }
-    } else if(interaction.options.getSubcommand() === 'remove_legacy') {
-      // delete a single reminder
-      removeReminderLegacy(interaction, [interaction.options.getString('date'), interaction.options.getString('time')])
+    if(interaction.options.getSubcommand() === 'add') {
+      // create a new reminder
+      addReminder(interaction, [interaction.options.getString('date'), interaction.options.getString('time'), interaction.options.getString('message'), interaction.options.getMentionable('mention'), interaction.options.getChannel('channel')])
     } else if(interaction.options.getSubcommand() === 'remove') {
       // delete a single reminder
       removeReminderOptions(interaction)
