@@ -1,0 +1,72 @@
+{
+    "translation": {
+        "weekdays": {
+            "mon": "montag",
+            "tue": "dienstag",
+            "wed": "mittwoch",
+            "thu": "donnerstag",
+            "fri": "freitag",
+            "sat": "samstag",
+            "sun": "sonntag"
+        },
+        "errors": {
+            "general": "Da hat etwas nicht funktioniert! 🤯",
+            "date": {
+                "format": "Ich kann mit dem Datum `{{date}}` leider nichts anfangen, tut mir leid {{nickname}} 🤔\nHast es auch ganz sicher in dem Format eingegeben: `DD.MM.YYYY`, also zum Beispiel `13.05.2021`?",
+                "past": "Hey, Zeitreisender! Ein Datum in der Vergangenheit macht nicht so viel Sinn, oder? 😉 Ich tu mal so als hättest du das nicht geschrieben 😛",
+                "future": "Eine gute Planung ist Gold wert, aber mehr als zwei {{futureUnit}} in die Zukunft muss man nun wirklich nicht planen, oder? 😉 Gib bitte ein zeitlich näheres Datum an 🙂",
+                "months": "Monate",
+                "weeks": "Wochen"
+            },
+            "time": {
+                "format": "Ich kann mit der Uhrzeit `{{time}}` leider nichts anfangen, tut mir leid {{nickname}} 🤔\nHast es auch ganz sicher in dem Format eingegeben: `HH:mm`, also zum Beispiel `18:30`? (wir verwenden 24 Stunden wie zivilisierte Menschen)",
+                "future": "Die Uhrzeit muss schon in der Zukunft liegen, was hat ein Reminder sonst für einen Sinn? 🙃\nEventuell ist die Uhrzeit auch zu knapp an der jetzigen Uhrzeit. Für ein paar Sekunden hat ein Reminder auch nicht so viel Sinn, oder? 😛",
+                "duplicate": "An genau **diesem** Tag zu genau **dieser** Uhrzeit gibt es schon einen Reminder, sorry. Verschieb ihn doch um eine Minute oder lösche zuerst den anderen mit `/erinnerung löschen` 😉"
+            }
+        },
+        "dice": {
+            "countdown1": "{{nickname}} wirft den Würfel des Schicksals 🎲 ...",
+            "countdown2": "{{nickname}} beobachtet ihn ganz genau 👀 ...",
+            "countdown3": "Und das Ergebnis ist..."
+        },
+        "random": {
+            "countdown1": "Und der Sieger ist...",
+            "countdown2": "Trommelwirbel 🥁 ..."
+        },
+        "reminder": {
+            "add": {
+                "reply": "Dein Reminder wurde registriert und wird am {{date}} um {{time}} Uhr in {{channel}} gesendet! 🙂"
+            },
+            "remove": {
+                "none_saved": "Ich konnte keinen passenden Reminder finden 🤔",
+                "reply": "Der Reminder am {{date}} um {{time}} wurde erfolgreich gelöscht! 🗑️",
+                "select": "Welche der folgenden Erinnerungen soll gelöscht werden?",
+                "none_selected": "Keine ausgewählt",
+                "confirm": "Bist du dir sicher, dass du die folgende Erinnerung löschen möchtest?\n`{{reminder}}`",
+                "yes": "Ja, weg damit!",
+                "no": "Nein, lieber doch nicht!",
+                "yes_reply": "Die Erinnerung am {{date}} um {{time}} wurde erfolgreich gelöscht!",
+                "no_reply": "Keine Sorge, ich habe nichts gelöscht 😇"
+            },
+            "list": {
+                "none_saved": "Es stehen keine Reminder aus 👍",
+                "reply": "Diese Reminder habe ich im Hinterkopf:\n"
+            },
+            "clear": {
+                "none_saved": "Es stehen sowieso keine Reminder aus 👍",
+                "confirm": "Diese Aktion löscht sämtliche Erinnerungen und kann nicht wieder rückgängig gemacht werden. Bist du dir wirklich sicher?",
+                "yes": "Ja, vernichte sie alle vollständig",
+                "no": "Nein, ich hab's mir anders überlegt!",
+                "no_reply": "Keine Sorge, es ist nichts passiert!",
+                "yes_reply": "Die folgenden Reminder wurden gelöscht:\n"
+            }   
+        },
+        "session": {
+            "message": "@everyone Es gibt wieder was zum Abstimmen ⬆",
+            "title": "Nächste Gaming-Session",
+            "desc": "Wann würde es euch am besten passen?\nStandard-Startzeit: 20:00 Uhr 🕗\nWenn ihr keine Zeit habt, reagiert bitte mit dem ❌",
+            "top_entries": "Aktuell am häufigsten genannt",
+            "finished_message": "Ziel erreicht! 🙂\nEs haben alle {{memberCount}} bei einer Umfrage für den selben Tag gestimmt! Überprüf nochmal ob es mehrere Tage betrifft und entscheide dich in dem Fall für einen! 🙂"
+        }
+    }
+}

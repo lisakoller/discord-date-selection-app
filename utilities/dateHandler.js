@@ -1,3 +1,4 @@
+const i18next = require('i18next')
 const moment = require('moment')
 moment.locale('de')
 
@@ -31,6 +32,34 @@ module.exports = {
       text: 'sonntag',
       isoWeekday: 7,
     },
+    {
+      text: 'monday',
+      isoWeekday: 1,
+    },
+    {
+      text: 'tuesday',
+      isoWeekday: 2,
+    },
+    {
+      text: 'wednesday',
+      isoWeekday: 3,
+    },
+    {
+      text: 'thursday',
+      isoWeekday: 4,
+    },
+    {
+      text: 'friday',
+      isoWeekday: 5,
+    },
+    {
+      text: 'saturday',
+      isoWeekday: 6,
+    },
+    {
+      text: 'sunday',
+      isoWeekday: 7,
+    },
   ],
   availableRelativeStartingDays: [
     {
@@ -43,6 +72,18 @@ module.exports = {
     },
     {
       text: 'übermorgen',
+      addDays: 2,
+    },
+    {
+      text: 'today',
+      addDays: 0,
+    },
+    {
+      text: 'tomorrow',
+      addDays: 1,
+    },
+    {
+      text: 'day after tomorrow',
       addDays: 2,
     },
   ],
@@ -74,9 +115,10 @@ module.exports = {
    * @param {string} inputString date input by user
    * @param {boolean} skipChecking skip checking of future and past, only check for valid date
    * @param {string} futureUnit either 'months' or 'weeks', how long into the future a date is okay
+   * @param {interaction} interaction Discord interaction
    * @returns resolves with a moment object, rejects with a message
    */
-  convertInputToDate(inputString, skipChecking = false, futureUnit = 'months') {
+  convertInputToDate(inputString, skipChecking = false, futureUnit = 'months', interaction = undefined) {
     return new Promise((resolve, reject) => {
       // check if input equals a weekday like "monday" ("montag")
       if (this.availableStartingWeekdays.some((day) => day.text === inputString.toLowerCase())) {
@@ -97,24 +139,16 @@ module.exports = {
         const inputDate = moment(inputString, 'DD.MM.YYYY')
         // check whether the parsed date is valid
         if (!inputDate.isValid()) {
-          reject(
-            `Ich kann mit dem Datum \`${inputString}\` leider nichts anfangen, tut mir leid ${message.author} 🤔\nHast es auch ganz sicher in dem Format eingegeben: \`DD.MM.YYYY\`, also zum Beispiel \`13.05.2021\`? Alternativ kannst du auch einen Wochentag angeben, dann wird zum Beispiel der nächste Dienstag genommen. Wörter wie \`heute\`, \`morgen\` und \`übermorgen\` funktionieren auch 😇`
-          )
+          reject(i18next.t('errors.date.format', { date: inputString, nickname: interaction.member.nickname, lng: interaction.locale }))
           // check if further checking is should be skipped (whether it is in the past or too far in the future)
         } else if (skipChecking) {
           resolve(inputDate)
           // check if the date is in the past
         } else if (inputDate.isBefore(moment(), 'day')) {
-          reject(
-            `Hey, Zeitreisender! Ein Datum in der Vergangenheit macht nicht so viel Sinn, oder? 😉 Ich tu mal so als hättest du das nicht geschrieben 😛`
-          )
+          reject(i18next.t('errors.date.past', { lng: interaction.locale }))
           // check if the date is too far in the future
         } else if (inputDate.isAfter(moment().add(2, futureUnit))) {
-          reject(
-            `Eine gute Planung ist Gold wert, aber mehr als zwei ${
-              futureUnit === 'months' ? 'Monate' : 'Wochen'
-            } in die Zukunft muss man nun wirklich nicht planen, oder? 😉 Gib bitte ein zeitlich näheres Datum an 🙂`
-          )
+          reject(i18next.t('errors.date.future', { futureUnit: futureUnit === 'months' ? i18next.t('errors.date.months', { lng: interaction.locale }) : i18next.t('errors.date.weeks', { lng: interaction.locale }), lng: interaction.locale }))
           // date is valid and in the correct timeframe
         } else {
           resolve(inputDate)

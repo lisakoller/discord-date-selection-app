@@ -1,123 +1,142 @@
 require('dotenv').config()
 const fs = require('fs')
-const Discord = require('discord.js')
-const { prefix } = require('./config.json')
+const path = require('node:path')
+const { Client, IntentsBitField, Partials, Collection, ActivityType } = require('discord.js')
 const dynamoDB = require('./utilities/dynamoDB')
+const i18next = require('i18next')
+const en = require('./utilities/locales/en.json')
+const de = require('./utilities/locales/de.json')
+
+i18next.init({
+  fallbackLng: 'en',
+  debug: false,
+  resources: { en, de }
+})
 
 const token = process.env.TOKEN
 const guildID = process.env.GUILD_ID
-const authorID = process.env.AUTHOR_ID
+const clientID = process.env.CLIENT_ID
+
+const myIntents = new IntentsBitField()
+myIntents.add(IntentsBitField.Flags.Guilds,
+              IntentsBitField.Flags.GuildMessages,
+              IntentsBitField.Flags.GuildMessageReactions,
+              IntentsBitField.Flags.MessageContent,
+              IntentsBitField.Flags.DirectMessages,
+              IntentsBitField.Flags.GuildPresences,
+              IntentsBitField.Flags.GuildMembers)
 
 // create new client
-const client = new Discord.Client({
-  partials: ['MESSAGE', 'CHANNEL', 'REACTION'],
+const client = new Client({
+  intents: myIntents,
+  partials: [
+    Partials.Message,
+    Partials.Channel,
+    Partials.Reaction
+  ]
 })
-client.commands = new Discord.Collection()
+
+client.once('ready', () => {
+  console.log('Client is ready')
+})
+
+client.commands = new Collection()
 
 // read all command files and add them to the collection
-const commandFiles = fs.readdirSync('./commands').filter((file) => file.endsWith('.js'))
+const commandsPath = path.join(__dirname, 'commands')
+const commandFiles = fs.readdirSync(commandsPath).filter((file) => file.endsWith('.js'))
 for (const file of commandFiles) {
-  const command = require(`./commands/${file}`)
-  client.commands.set(command.name, command)
+  const filePath = path.join(commandsPath, file)
+  const command = require(filePath)
+  client.commands.set(command.data.name, command)
 }
 
-/**
- * handle the reaction of a user
- * @param {discord reaction object} reaction reaction by a user
- * @param {discord user object} user user that reacted
- * @param {string} type either 'add' or 'remove'
- */
-async function handleReactions(reaction, user, type) {
-  // to determine whether the reaction was added or removed
-  if (!(type === 'add' || type === 'remove')) {
-    console.error('Wrong type: ', type)
-    return
-  }
+client.on('interactionCreate', async interaction => {
+  if (!interaction.isChatInputCommand()) return
 
-  // ignore reactions by bots
-  if (user.bot === true) return
+  const command = interaction.client.commands.get(interaction.commandName)
 
-  let fullmessage
-
-  // if the message is a partial load the full message
-  if (reaction.message.partial) {
-    try {
-      fullmessage = await reaction.message.fetch()
-    } catch (error) {
-      console.error('Something went wrong when fetching the message: ', error)
-    }
-  } else {
-    fullmessage = reaction.message
-  }
-
-  const author = await fullmessage.author.fetch()
-  const title = fullmessage.embeds[0].title
-
-  // check if the message is a session message (where reactions need to be handled)
-  if (author.bot === true && author.id === authorID && title === 'Nächste Gaming-Session') {
-    const command = client.commands.get('session')
-    try {
-      // handle the reaction
-      command.handleReaction(fullmessage, reaction, user, type)
-    } catch (error) {
-      console.error(error)
-      return message.reply('ein Fehler ist dabei aufgetreten das Kommando auszuführen! :(')
-    }
-  } else {
-    console.info('This is not a message where I care about the reactions 🤷‍♀️')
-  }
-
-  if (type === 'add') {
-    console.info(`${user.username} reacted with "${reaction.emoji.name}".`)
-  } else {
-    console.info(`${user.username} removed reaction "${reaction.emoji.name}".`)
-  }
-}
-
-// to handle reactions to messages
-client.on('messageReactionAdd', async (reaction, user) => {
-  handleReactions(reaction, user, 'add')
-})
-
-// to handle removal of reactions
-client.on('messageReactionRemove', async (reaction, user) => {
-  handleReactions(reaction, user, 'remove')
-})
-
-// to handle new messages in the chat
-client.on('message', async (message) => {
-  // ignore messages that don't start with the prefix
-  if (!message.content.startsWith(prefix) || message.author.bot) return
-
-  // extract possible arguments
-  const args = message.content.slice(prefix.length).trim().split(/ +/)
-  const commandName = args.shift().toLowerCase()
-
-  const command =
-    client.commands.get(commandName) || client.commands.find((cmd) => cmd.aliases && cmd.aliases.includes(commandName))
-
-  // return if the command is unkown
-  if (!command) return
-
-  // send an error message if the commands requires arguments but the user didn't provide any
-  if (command.args && !args.length) {
-    let reply = `Du hast keine Argumente angegeben, ${message.author}!`
-
-    // add instructions if available
-    if (command.usage) {
-      reply += `\nSo würds funktionieren: ${prefix}${command.name} ${command.usage}`
-    }
-
-    return message.channel.send(reply)
-  }
+  if(!command) return
 
   try {
-    // try to execute the command
-    command.execute(message, args)
+    await command.execute(interaction)
   } catch (error) {
     console.error(error)
-    message.reply('ein Fehler ist dabei aufgetreten das Kommando auszuführen! 😢')
+    await interaction.reply({ content: i18next.t('errors.general', { lng: interaction.locale }), ephemeral: true })
   }
+})
+
+// react to buttons
+client.on('interactionCreate', async interaction => {
+  if (!interaction.isButton()) return
+
+  try {
+    if(interaction.customId === 'removeReminders') {
+      const command = interaction.client.commands.get('reminder')
+      if(!command) return
+  
+      await command.removeAllReminders(interaction)
+    } else if(interaction.customId === 'keepReminders') {
+      await interaction.update({ content: i18next.t('reminder.clear.no_reply', { lng: interaction.locale }), components: [] })
+    } else if(interaction.customId === 'removeReminder') {
+      const command = interaction.client.commands.get('reminder')
+      if(!command) return
+
+      await command.removeReminder(interaction)
+    } else if(interaction.customId === 'keepReminder') {
+      await interaction.update({ content: i18next.t('reminder.remove.no_reply', { lng: interaction.locale }), components: [] })
+    }
+  } catch(error) {
+    console.error(error)
+    await interaction.reply({ content: i18next.t('errors.general', { lng: interaction.locale }), ephemeral: true })
+  }
+})
+
+// react to select menus
+client.on('interactionCreate', async interaction => {
+  if(!interaction.isSelectMenu()) return
+
+  try {
+    if(interaction.customId === 'removeReminderOptions') {
+      const command = interaction.client.commands.get('reminder')
+      if(!command) return
+
+      await command.confirmDelete(interaction)
+    }
+  } catch(error) {
+    console.error(error)
+    await interaction.reply({ content: i18next.t('errors.general', { lng: interaction.locale }), ephemeral: true })
+  }
+})
+
+// react to autocomplete
+client.on('interactionCreate', async interaction => {
+  if (!interaction.isAutocomplete()) return
+
+	if (interaction.commandName === 'session') {
+		const focusedOption = interaction.options.getFocused(true)
+		let choices
+
+		if (focusedOption.name === 'starting_day') {
+			choices = [
+        'nächster Montag - next monday',
+        'nächster Dienstag - next tuesday',
+        'nächster Mittwoch - next wednesday',
+        'nächster Donnerstag - next thursday',
+        'nächster Freitag - next friday',
+        'nächster Samstag - next saturday',
+        'nächster Sonntag - next sunday',
+        'heute - today',
+        'morgen - tomorrow',
+        'übermorgen - day after tomorrow'
+      ]
+		}
+
+		const filtered = choices.filter(choice => choice.startsWith(focusedOption.value))
+		await interaction.respond(
+			filtered.map(choice => ({ name: choice, value: choice.replace('nächster ', '').split(' ')[0].toLowerCase() })),
+		)
+	}
 })
 
 client.on('ready', async () => {
@@ -137,7 +156,70 @@ client.on('ready', async () => {
   }
 
   // set the activity of the bot that is displayed under it
-  client.user.setActivity(`!help`, { type: 'LISTENING' })
+  client.user.setActivity(`deinen /'s`, { type: ActivityType.Listening })
 })
 
 client.login(token)
+
+/**
+ * handle the reaction of a user
+ * @param {discord reaction object} reaction reaction by a user
+ * @param {discord user object} user user that reacted
+ * @param {string} type either 'add' or 'remove'
+ */
+async function handleReactions(reaction, user, type) {
+  // to determine whether the reaction was added or removed
+  if (!(type === 'add' || type === 'remove')) {
+    console.error('Wrong type: ', type)
+    return
+  }
+
+  // ignore reactions by bots
+  if (user.bot === true) return
+
+  let fullmessage
+
+// When a reaction is received, check if the structure is partial -> load full message
+  if (reaction.partial) {
+    try {
+      await reaction.fetch()
+      fullmessage = await reaction.message
+
+      // If the message this reaction belongs to was removed, the fetching might result in an API error which should be handled
+    } catch (error) {
+      console.error('Something went wrong when fetching the reaction: ', error)
+      return
+    }
+  } else {
+    fullmessage = reaction.message
+  }
+  // Now the message and reaction have been cached and are fully available
+
+  const author = fullmessage.author
+  const title = fullmessage.embeds[0].title
+
+  // check if the message is a session message (where reactions need to be handled)
+  if (author.bot === true && author.id === clientID && title.includes('Gaming-Session')) {
+    const command = client.commands.get('session')
+    try {
+      // handle the reaction
+      command.handleReaction(fullmessage, reaction, user, type)
+    } catch (error) {
+      console.error(error)
+      // TODO locale?
+      return message.reply(i18next.t('errors.general', { lng: 'de' }))
+    }
+  } else {
+    console.info('This is not a message where I care about the reactions 🤷‍♀️')
+  }
+}
+
+// to handle reactions to messages
+client.on('messageReactionAdd', async (reaction, user) => {
+  handleReactions(reaction, user, 'add')
+})
+
+// to handle removal of reactions
+client.on('messageReactionRemove', async (reaction, user) => {
+  handleReactions(reaction, user, 'remove')
+})

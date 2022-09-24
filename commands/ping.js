@@ -1,8 +1,13 @@
+const { SlashCommandBuilder } = require('discord.js')
+
 module.exports = {
-  name: 'ping',
-  description: 'Ein einfacher Weg um zu sehen, ob der Bot online ist.',
-  args: false,
-  execute(message, args) {
-    return message.channel.send('Pong! 🏓')
-  },
+  data: new SlashCommandBuilder()
+    .setName('ping')
+    .setDescription('Easy way to check, whether the bot is online.')
+    .setDescriptionLocalizations({
+      de: 'Ein einfacher Weg um zu sehen, ob der Bot online ist.'
+    }),
+  async execute(interaction) {
+    await interaction.reply('Pong! 🏓')
+  }
 }
