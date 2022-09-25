@@ -106,7 +106,8 @@ function getBasicEmbedFields(options, locale) {
  * @param {array} options all days that should be displayed
  * @returns object to use as embed
  */
-function getBasicEmbed(options, locale) {
+function getBasicEmbed(options, time, locale) {
+  console.log(time)
   return new EmbedBuilder()
     .setColor(0x72e397)
     .setTitle(i18next.t('session.title', { lng: locale }))
@@ -114,7 +115,7 @@ function getBasicEmbed(options, locale) {
       name: 'Anonymous',
       iconURL: 'https://i.imgur.com/wSTFkRM.png',
     })
-    .setDescription(i18next.t('session.desc', { lng: locale }))
+    .setDescription(i18next.t('session.desc', { time: time ? time : '20:00', lng: locale }))
     .setThumbnail(singlePandaUrl)
     .addFields(getBasicEmbedFields(options, locale))
     .setTimestamp()
@@ -339,6 +340,19 @@ module.exports = {
           { name: '13 days', name_localizations: { de: '13 Tage' }, value: 13 },
           { name: '14 days', name_localizations: { de: '14 Tage' }, value: 14 }
         )
+    )
+    .addStringOption((option) =>
+      option
+        .setName('time')
+        .setNameLocalizations({
+          de: 'uhrzeit',
+        })
+        .setDescription('Time at which the meeting will start. (HH:mm) (Default: 20:00)')
+        .setDescriptionLocalizations({
+          de: 'Uhrzeit, zu der das Treffen startet. (HH:mm) (Standard: 20:00)',
+        })
+        .setRequired(false)
+        .setAutocomplete(true)
     ),
   async handleReaction(message, reaction, user, type, locale) {
     try {
@@ -379,6 +393,7 @@ module.exports = {
   async execute(interaction) {
     let inputStartingDay = interaction.options.getString('date')
     let inputNDays = interaction.options.getInteger('duration')
+    let inputTime = interaction.options.getString('time')
     let startingDay
     let nDays = inputNDays ? inputNDays : 7
 
@@ -397,7 +412,7 @@ module.exports = {
     const options = buildOptions(nDays, startingDay, interaction.locale)
 
     // build the embed and replace the placeholders
-    const embed = getBasicEmbed(options, interaction.locale)
+    const embed = getBasicEmbed(options, inputTime, interaction.locale)
     embed.setAuthor({
       name: interaction.member.nickname,
       iconURL: interaction.member.displayAvatarURL(),
