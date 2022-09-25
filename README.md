@@ -1,6 +1,6 @@
 # Discord-Date-Selection-Bot
 
-Just my first try making a bot for Discord. It's intended for me and a bunch of friends, therefore the text in the embeds is currently only available in German. The slashcommands themselves as well as all instructions are in English too.
+Just my first try making a bot for Discord. You can roll a dice, let fate choose one of your provided options, set reminders at a specific date and time and create a poll to let people vote for your next day to meet. The bot now fully supports both German and English.
 
 ## Usable commands
 

@@ -120,20 +120,35 @@ client.on('interactionCreate', async (interaction) => {
   if (interaction.commandName === 'session' || interaction.commandName === 'reminder') {
     const focusedOption = interaction.options.getFocused(true)
     let choices
+    let locale = interaction.locale
 
     if (focusedOption.name === 'date') {
-      choices = [
-        'nächster Montag - next monday',
-        'nächster Dienstag - next tuesday',
-        'nächster Mittwoch - next wednesday',
-        'nächster Donnerstag - next thursday',
-        'nächster Freitag - next friday',
-        'nächster Samstag - next saturday',
-        'nächster Sonntag - next sunday',
-        'heute - today',
-        'morgen - tomorrow',
-        'übermorgen - day after tomorrow',
-      ]
+      if (locale === 'de') {
+        choices = [
+          'nächster Montag',
+          'nächster Dienstag',
+          'nächster Mittwoch',
+          'nächster Donnerstag',
+          'nächster Freitag',
+          'nächster Samstag',
+          'nächster Sonntag',
+          'heute',
+          'morgen',
+          'übermorgen',
+        ]
+      } else {
+        choices = [
+          'next Monday',
+          'next Tuesday',
+          'next Wednesday',
+          'next Thursday',
+          'next Friday',
+          'next Saturday',
+          'next Sunday',
+          'today',
+          'tomorrow',
+        ]
+      }
     } else if (focusedOption.name === 'time') {
       choices = [
         '10:00',
@@ -168,7 +183,7 @@ client.on('interactionCreate', async (interaction) => {
     await interaction.respond(
       filtered.map((choice) => ({
         name: choice,
-        value: focusedOption.name === 'date' ? choice.replace('nächster ', '').split(' ')[0].toLowerCase() : choice,
+        value: focusedOption.name === 'date' ? choice.replace(/nächster |next /g, '').toLowerCase() : choice,
       }))
     )
   }
@@ -236,13 +251,13 @@ async function handleReactions(reaction, user, type) {
   // check if the message is a session message (where reactions need to be handled)
   if (author.bot === true && author.id === clientID && title.includes('Gaming-Session')) {
     const command = client.commands.get('session')
+    const locale = title.includes('Next') ? 'en' : 'de'
     try {
       // handle the reaction
-      command.handleReaction(fullmessage, reaction, user, type)
+      command.handleReaction(fullmessage, reaction, user, type, locale)
     } catch (error) {
       console.error(error)
-      // TODO locale?
-      return message.reply(i18next.t('errors.general', { lng: 'de' }))
+      return message.reply(i18next.t('errors.general', { lng: locale }))
     }
   } else {
     console.info('This is not a message where I care about the reactions 🤷‍♀️')

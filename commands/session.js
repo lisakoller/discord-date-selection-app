@@ -44,11 +44,11 @@ const emojiList = [
  * @param {moment object} startingOn date of the first option
  * @returns array containing max available date options starting on startingOn
  */
-function buildOptions(max, startingOn) {
+function buildOptions(max, startingOn, locale) {
   let result = []
 
   for (let i = 0; i < max; i++) {
-    let weekday = startingOn.format('dddd')
+    let weekday = startingOn.locale(locale).format('dddd')
     let dateAsNumber = startingOn.date()
     let icon = emojiList[i]
 
@@ -66,8 +66,8 @@ function buildOptions(max, startingOn) {
 
   result.push({
     icon: emojiList[emojiList.length - 1],
-    text: `${emojiList[emojiList.length - 1]}  Beschäftigt`,
-    weekday: 'Beschäftigt',
+    text: `${emojiList[emojiList.length - 1]}  ${locale.includes('en') ? 'Busy' : 'Beschäftigt'}`,
+    weekday: `${locale.includes('en') ? 'Busy' : 'Beschäftigt'}`,
     value: '-',
   })
 
@@ -119,7 +119,7 @@ function getBasicEmbed(options, locale) {
     .addFields(getBasicEmbedFields(options, locale))
     .setTimestamp()
     .setFooter({
-      text: 'Version 2.0',
+      text: 'Version 2.1',
       iconURL: botIconUrl,
     })
 }
@@ -173,7 +173,7 @@ function removeUser(value, user) {
  * @param {discord message object} sentMessage message to get the most voted reactions from
  * @returns formatted string of most reacted options
  */
-function getTopAnswer(sentMessage, reaction) {
+function getTopAnswer(sentMessage, reaction, locale) {
   let reactions = sentMessage.reactions.cache //.array()
 
   // how often was every emoji selected/reacted? (includes the bot itself)
@@ -244,8 +244,7 @@ function getTopAnswer(sentMessage, reaction) {
   ) {
     console.info(`Yay! All ${memberCount} members have voted!`)
     const owner = guild.members.cache.get(guild.ownerId)
-    // TODO locale?
-    owner.send(i18next.t('session.finished_message', { memberCount: memberCount, lng: 'de' }))
+    owner.send(i18next.t('session.finished_message', { memberCount: memberCount, lng: locale }))
   }
 
   // only return the result if there is at least one entry
@@ -261,7 +260,7 @@ function getTopAnswer(sentMessage, reaction) {
  * @param {string} type either 'add' or 'remove' the user from the list of reactions
  * @returns updated embed fields
  */
-async function updateFields(receivedEmbed, sentMessage, reaction, user, type) {
+async function updateFields(receivedEmbed, sentMessage, reaction, user, type, locale) {
   return new Promise((resolve, reject) => {
     // the type is necessary to determine if the user should be added or removed
     if (!(type === 'add' || type === 'remove')) {
@@ -274,7 +273,7 @@ async function updateFields(receivedEmbed, sentMessage, reaction, user, type) {
 
       // the first field contains the top answers that need to be updated
       if (index === 0) {
-        o.value = getTopAnswer(sentMessage, reaction)
+        o.value = getTopAnswer(sentMessage, reaction, locale)
 
         // the other fields contain a list of users that reacted with that emoji
         // index-2 because there are 2 "standard" fields that need to be subtracted (intro + blank space; see basicEmbedFields)
@@ -326,29 +325,29 @@ module.exports = {
         })
         .setRequired(false)
         .addChoices(
-          { name: '2 tage - days', value: 2 },
-          { name: '3 tage - days', value: 3 },
-          { name: '4 tage - days', value: 4 },
-          { name: '5 tage - days', value: 5 },
-          { name: '6 tage - days', value: 6 },
-          { name: '7 tage - days', value: 7 },
-          { name: '8 tage - days', value: 8 },
-          { name: '9 tage - days', value: 9 },
-          { name: '10 tage - days', value: 10 },
-          { name: '11 tage - days', value: 11 },
-          { name: '12 tage - days', value: 12 },
-          { name: '13 tage - days', value: 13 },
-          { name: '14 tage - days', value: 14 }
+          { name: '2 days', name_localizations: { de: '2 Tage' }, value: 2 },
+          { name: '3 days', name_localizations: { de: '3 Tage' }, value: 3 },
+          { name: '4 days', name_localizations: { de: '4 Tage' }, value: 4 },
+          { name: '5 days', name_localizations: { de: '5 Tage' }, value: 5 },
+          { name: '6 days', name_localizations: { de: '6 Tage' }, value: 6 },
+          { name: '7 days', name_localizations: { de: '7 Tage' }, value: 7 },
+          { name: '8 days', name_localizations: { de: '8 Tage' }, value: 8 },
+          { name: '9 days', name_localizations: { de: '9 Tage' }, value: 9 },
+          { name: '10 days', name_localizations: { de: '10 Tage' }, value: 10 },
+          { name: '11 days', name_localizations: { de: '11 Tage' }, value: 11 },
+          { name: '12 days', name_localizations: { de: '12 Tage' }, value: 12 },
+          { name: '13 days', name_localizations: { de: '13 Tage' }, value: 13 },
+          { name: '14 days', name_localizations: { de: '14 Tage' }, value: 14 }
         )
     ),
-  async handleReaction(message, reaction, user, type) {
+  async handleReaction(message, reaction, user, type, locale) {
     try {
       // only do something if the emoji is relevant
       if (emojiList.includes(reaction.emoji.name)) {
         const receivedEmbed = await message.embeds[0]
 
         // update the fields because of the new reaction
-        let fields = await updateFields(receivedEmbed, message, reaction, user, type)
+        let fields = await updateFields(receivedEmbed, message, reaction, user, type, locale)
 
         // update the embed
         const updatedEmbed = new EmbedBuilder()
@@ -374,8 +373,7 @@ module.exports = {
       }
     } catch (error) {
       console.error('Something went wrong: ', error)
-      // TODO locale?
-      message.channel.send({ content: i18next.t('errors.general', { lng: 'de' }) })
+      message.channel.send({ content: i18next.t('errors.general', { lng: locale }) })
     }
   },
   async execute(interaction) {
@@ -396,13 +394,13 @@ module.exports = {
     }
 
     // build all options based on the starting day and number of days that should be provided
-    const options = buildOptions(nDays, startingDay)
+    const options = buildOptions(nDays, startingDay, interaction.locale)
 
     // build the embed and replace the placeholders
     const embed = getBasicEmbed(options, interaction.locale)
     embed.setAuthor({
       name: interaction.member.nickname,
-      iconURL: interaction.member.displayAvatarURL(), //icon? avatarURL?
+      iconURL: interaction.member.displayAvatarURL(),
     })
 
     try {
