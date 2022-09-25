@@ -106,17 +106,16 @@ function getBasicEmbedFields(options, locale) {
  * @param {array} options all days that should be displayed
  * @returns object to use as embed
  */
-function getBasicEmbed(options, time, locale) {
-  console.log(time)
+function getBasicEmbed(options, author, time, image, locale) {
   return new EmbedBuilder()
     .setColor(0x72e397)
     .setTitle(i18next.t('session.title', { lng: locale }))
     .setAuthor({
-      name: 'Anonymous',
-      iconURL: 'https://i.imgur.com/wSTFkRM.png',
+      name: author.name,
+      iconURL: author.iconURL,
     })
     .setDescription(i18next.t('session.desc', { time: time ? time : '20:00', lng: locale }))
-    .setThumbnail(singlePandaUrl)
+    .setThumbnail(image ? image.url : singlePandaUrl)
     .addFields(getBasicEmbedFields(options, locale))
     .setTimestamp()
     .setFooter({
@@ -353,6 +352,18 @@ module.exports = {
         })
         .setRequired(false)
         .setAutocomplete(true)
+    )
+    .addAttachmentOption((option) =>
+      option
+        .setName('image')
+        .setNameLocalizations({
+          de: 'bild',
+        })
+        .setDescription('Image to display on the poll. (preferably a square) (Default: a panda)')
+        .setDescriptionLocalizations({
+          de: 'Bild, das bei der Umfrage angezeigt wird. (am besten quadratisch) (Standard: ein Panda)',
+        })
+        .setRequired(false)
     ),
   async handleReaction(message, reaction, user, type, locale) {
     try {
@@ -408,15 +419,17 @@ module.exports = {
       }
     }
 
+    let image = interaction.options.getAttachment('image')
+    let author = {
+      name: interaction.member.nickname,
+      iconURL: interaction.member.displayAvatarURL(),
+    }
+
     // build all options based on the starting day and number of days that should be provided
     const options = buildOptions(nDays, startingDay, interaction.locale)
 
     // build the embed and replace the placeholders
-    const embed = getBasicEmbed(options, inputTime, interaction.locale)
-    embed.setAuthor({
-      name: interaction.member.nickname,
-      iconURL: interaction.member.displayAvatarURL(),
-    })
+    const embed = getBasicEmbed(options, author, inputTime, image, interaction.locale)
 
     try {
       // send the message in the same channel
