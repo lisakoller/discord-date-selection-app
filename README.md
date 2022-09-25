@@ -1,4 +1,4 @@
-# Discord-Date-Selection-Bot
+# Discord Bot Caley
 
 Just my first try making a bot for Discord. You can roll a dice, let fate choose one of your provided options, set reminders at a specific date and time and create a poll to let people vote for your next day to meet. The bot now fully supports both German and English.
 

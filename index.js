@@ -177,6 +177,19 @@ client.on('interactionCreate', async (interaction) => {
         '21:00',
         '22:00',
       ]
+    } else if (focusedOption.name === 'title') {
+      if (locale === 'de') {
+        choices = [
+          'Nächster Ausflug',
+          'Nächster Escape-Room',
+          'Nächster Spieleabend',
+          'Nächster Fernsehabend',
+          'Kino',
+          'Café',
+        ]
+      } else {
+        choices = ['Next trip', 'Next escape room', 'Next game night', 'Next watch party', 'Cinema']
+      }
     }
 
     const filtered = choices.filter((choice) => choice.startsWith(focusedOption.value))
@@ -206,7 +219,7 @@ client.on('ready', async () => {
   }
 
   // set the activity of the bot that is displayed under it
-  client.user.setActivity(`deinen /'s`, { type: ActivityType.Listening })
+  client.user.setActivity(`/`, { type: ActivityType.Listening })
 })
 
 client.login(token)
@@ -246,12 +259,13 @@ async function handleReactions(reaction, user, type) {
   // Now the message and reaction have been cached and are fully available
 
   const author = fullmessage.author
-  const title = fullmessage.embeds[0].title
+  const footer = fullmessage.embeds[0].footer
+  const desc = fullmessage.embeds[0].description
 
   // check if the message is a session message (where reactions need to be handled)
-  if (author.bot === true && author.id === clientID && title.includes('Gaming-Session')) {
+  if (author.bot === true && author.id === clientID && footer.text.includes('Caley')) {
     const command = client.commands.get('session')
-    const locale = title.includes('Next') ? 'en' : 'de'
+    const locale = desc.includes('Starting') ? 'en' : 'de'
     try {
       // handle the reaction
       command.handleReaction(fullmessage, reaction, user, type, locale)

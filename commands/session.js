@@ -106,20 +106,25 @@ function getBasicEmbedFields(options, locale) {
  * @param {array} options all days that should be displayed
  * @returns object to use as embed
  */
-function getBasicEmbed(options, author, time, image, locale) {
+function getBasicEmbed(options, author, title, message, time, image, locale) {
   return new EmbedBuilder()
     .setColor(0x72e397)
-    .setTitle(i18next.t('session.title', { lng: locale }))
+    .setTitle(title ? title : i18next.t('session.title', { lng: locale }))
     .setAuthor({
       name: author.name,
       iconURL: author.iconURL,
     })
-    .setDescription(i18next.t('session.desc', { time: time ? time : '20:00', lng: locale }))
+    .setDescription(
+      `${message ? message : i18next.t('session.message', { lng: locale })}\n${i18next.t('session.desc', {
+        time: time ? time : '20:00',
+        lng: locale,
+      })}`
+    )
     .setThumbnail(image ? image.url : singlePandaUrl)
     .addFields(getBasicEmbedFields(options, locale))
     .setTimestamp()
     .setFooter({
-      text: 'Version 2.1',
+      text: 'Caley Version 2.2',
       iconURL: botIconUrl,
     })
 }
@@ -342,6 +347,31 @@ module.exports = {
     )
     .addStringOption((option) =>
       option
+        .setName('title')
+        .setNameLocalizations({
+          de: 'titel',
+        })
+        .setDescription('Set a title for the meeting. (Default: Next Gaming-Session')
+        .setDescriptionLocalizations({
+          de: 'Wähle einen Titel für das Treffen. (Standard: Nächste Gaming-Session',
+        })
+        .setRequired(false)
+        .setAutocomplete(true)
+    )
+    .addStringOption((option) =>
+      option
+        .setName('message')
+        .setNameLocalizations({
+          de: 'nachricht',
+        })
+        .setDescription('Custom sentence to describe the meeting.')
+        .setDescriptionLocalizations({
+          de: 'Benutzerdefinierter Satz, um das Treffen zu beschreiben.',
+        })
+        .setRequired(false)
+    )
+    .addStringOption((option) =>
+      option
         .setName('time')
         .setNameLocalizations({
           de: 'uhrzeit',
@@ -359,9 +389,21 @@ module.exports = {
         .setNameLocalizations({
           de: 'bild',
         })
-        .setDescription('Image to display on the poll. (preferably a square) (Default: a panda)')
+        .setDescription('Image to display on the poll. (preferably a square) (Default: a red panda)')
         .setDescriptionLocalizations({
-          de: 'Bild, das bei der Umfrage angezeigt wird. (am besten quadratisch) (Standard: ein Panda)',
+          de: 'Bild, das bei der Umfrage angezeigt wird. (am besten quadratisch) (Standard: ein roter Panda)',
+        })
+        .setRequired(false)
+    )
+    .addMentionableOption((option) =>
+      option
+        .setName('mention')
+        .setNameLocalizations({
+          de: 'erwähnen',
+        })
+        .setDescription('Is there a role or person you want to notify? (default: @everyone)')
+        .setDescriptionLocalizations({
+          de: 'Gibt es eine Rolle oder Person, die du aufmerksam machen möchtest? (Standard: @everyone)',
         })
         .setRequired(false)
     ),
@@ -419,6 +461,8 @@ module.exports = {
       }
     }
 
+    let title = interaction.options.getString('title')
+    let message = interaction.options.getString('message')
     let image = interaction.options.getAttachment('image')
     let author = {
       name: interaction.member.nickname,
@@ -429,7 +473,7 @@ module.exports = {
     const options = buildOptions(nDays, startingDay, interaction.locale)
 
     // build the embed and replace the placeholders
-    const embed = getBasicEmbed(options, author, inputTime, image, interaction.locale)
+    const embed = getBasicEmbed(options, author, title, message, inputTime, image, interaction.locale)
 
     try {
       // send the message in the same channel
@@ -445,6 +489,9 @@ module.exports = {
     }
 
     // tell everyone that a new poll has been posted
-    interaction.channel.send(i18next.t('session.message', { lng: interaction.locale }))
+    let mention = interaction.options.getMentionable('mention')
+    interaction.channel.send(
+      `${mention ? mention : '@everyone'} ${i18next.t('session.alert', { lng: interaction.locale })}`
+    )
   },
 }

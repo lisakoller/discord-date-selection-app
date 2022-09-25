@@ -62,9 +62,10 @@
       }
     },
     "session": {
-      "message": "@everyone A new poll is online ⬆",
+      "alert": "A new poll is online ⬆",
       "title": "Next Gaming-Session",
-      "desc": "Which days would suit you best?\nStarting at: {{time}} o'clock 🕗\nIf you don't have time please react with the ❌",
+      "desc": "Starting at: {{time}} o'clock 🕗\nIf you don't have time please react with the ❌",
+      "message": "Which days would suit you best?",
       "top_entries": "Currently mentioned most often",
       "finished_message": "Goal achieved! 🙂\nAll {{memberCount}} members have voted for the same day at your poll! Check if there are multiple top days and choose one in that case! 🙂"
     }

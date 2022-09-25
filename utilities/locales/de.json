@@ -62,9 +62,10 @@
       }
     },
     "session": {
-      "message": "@everyone Es gibt wieder was zum Abstimmen ⬆",
+      "alert": "Es gibt wieder was zum Abstimmen ⬆",
       "title": "Nächste Gaming-Session",
-      "desc": "Wann würde es euch am besten passen?\nStartzeit: {{time}} Uhr 🕗\nWenn ihr keine Zeit habt, reagiert bitte mit dem ❌",
+      "desc": "Startzeit: {{time}} Uhr 🕗\nWenn ihr keine Zeit habt, reagiert bitte mit dem ❌",
+      "message": "Wann würde es euch am besten passen?",
       "top_entries": "Aktuell am häufigsten genannt",
       "finished_message": "Ziel erreicht! 🙂\nEs haben alle {{memberCount}} bei einer Umfrage für den selben Tag gestimmt! Überprüf nochmal ob es mehrere Tage betrifft und entscheide dich in dem Fall für einen! 🙂"
     }
