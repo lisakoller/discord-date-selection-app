@@ -24,7 +24,6 @@ myIntents.add(
   IntentsBitField.Flags.GuildMessageReactions,
   IntentsBitField.Flags.MessageContent,
   IntentsBitField.Flags.DirectMessages,
-  IntentsBitField.Flags.GuildPresences,
   IntentsBitField.Flags.GuildMembers
 )
 
