@@ -19,13 +19,16 @@ module.exports = {
 
       // define the schema for a reminder
       Reminder = dynamo.define('Reminder', {
-        hashKey: 'jobName',
+        hashKey: 'guild',
+        rangeKey: 'jobName',
         timestamps: false,
         schema: {
+          guild: Joi.string(),
           jobName: Joi.string(),
           date: Joi.date(),
-          customMessage: Joi.string().allow(''),
           channel: Joi.string(),
+          mention: Joi.string(),
+          message: Joi.string().allow(''),
         },
         tableName: 'discord-reminders',
       })
@@ -57,14 +60,16 @@ module.exports = {
   },
   /**
    * add a new reminder to the database
-   * @param {string} jobName unique jobName
+   * @param {string} guild id of the guild the message is sent in
+   * @param {string} jobName jobName
    * @param {date} date date the reminder is sent
-   * @param {string} customMessage custom message that is sent
    * @param {string} channel id of the channel the message is sent in
+   * @param {string} mention person that is pinged
+   * @param {string} message custom message that is sent
    */
-  create(jobName, date, customMessage, channel) {
+  create(guild, jobName, date, channel, mention, message) {
     Reminder.create(
-      { jobName: jobName, date: date, customMessage: customMessage, channel: channel },
+      { guild: guild, jobName: jobName, date: date, channel: channel, mention: mention, message: message },
       function (err, res) {
         if (err) {
           console.error('Error creating a reminder in DynamoDB: ', err)
@@ -76,10 +81,11 @@ module.exports = {
   },
   /**
    * delete a reminder from the database
-   * @param {string} jobName unique jobName
+   * @param {string} guild id of the guild the message is sent in
+   * @param {string} jobName jobName
    */
-  delete(jobName) {
-    Reminder.destroy(jobName, function (err, res) {
+  delete(guild, jobName) {
+    Reminder.destroy(guild, jobName, function (err, res) {
       if (err) {
         console.error('Error deleting reminder in DynamoDB: ', err)
       } else {
@@ -88,25 +94,68 @@ module.exports = {
     })
   },
   /**
-   * delete all reminders in the database
+   * delete all reminders in the database of a specific guild
+   * @param {string} guild id of the guild the message is sent in
    */
-  deleteAll() {
-    Reminder.scan()
-      .loadAll()
-      .exec(function (err, res) {
-        if (err) {
-          console.error('Error deleting all reminders in DynamoDB: ', err)
-        } else {
+  deleteAll(guild) {
+    return new Promise((resolve, reject) => {
+      Reminder.query(guild)
+        .loadAll()
+        .exec(function (err, res) {
+          if (err) {
+            console.error('Something went wrong scanning the reminders: ', err)
+            reject(err)
+          }
+          let deletedReminders = []
           res.Items.forEach((item) => {
-            Reminder.destroy(item.attrs.jobName, function (err, _) {
-              if (err) {
-                console.error('Error deleting a reminder in DynamoDB for clear command: ', err)
-              } else {
-                console.info('Reminder deleted in DynamoDB')
-              }
-            })
+            deletedReminders.push(item.attrs)
+            item.destroy()
           })
+          resolve(deletedReminders)
+        })
+    })
+  },
+  /**
+   * get a specific reminder of a specific guild in the database
+   * @param {string} guild id of the guild the message is sent in
+   * @param {string} jobName jobName
+   */
+  get(guild, jobName) {
+    return new Promise((resolve, reject) => {
+      Reminder.get(guild, jobName, function (err, res) {
+        if (err) {
+          console.error('Error getting guild reminders in DynamoDB: ', err)
+          reject(err)
+        } else {
+          let reminders = []
+          res.Items.forEach((item) => {
+            reminders.push(item.attrs)
+          })
+          resolve(reminders)
         }
       })
+    })
+  },
+  /**
+   * get all reminders in the database of a specific guild
+   * @param {string} guild id of the guild the message is sent in
+   */
+  getAll(guild) {
+    return new Promise((resolve, reject) => {
+      Reminder.query(guild)
+        .loadAll()
+        .exec(function (err, res) {
+          if (err) {
+            console.error('Error getting guild reminders in DynamoDB: ', err)
+            reject(err)
+          } else {
+            let reminders = []
+            res.Items.forEach((item) => {
+              reminders.push(item.attrs)
+            })
+            resolve(reminders)
+          }
+        })
+    })
   },
 }

@@ -14,7 +14,6 @@ i18next.init({
 })
 
 const token = process.env.TOKEN
-const guildID = process.env.GUILD_ID
 const clientID = process.env.CLIENT_ID
 
 const myIntents = new IntentsBitField()
@@ -34,7 +33,7 @@ const client = new Client({
 })
 
 client.once('ready', () => {
-  console.log('Client is ready')
+  console.info('Client is ready')
 })
 
 client.commands = new Collection()
@@ -204,7 +203,10 @@ client.on('interactionCreate', async (interaction) => {
 client.on('ready', async () => {
   try {
     // force fetching of users (for correct number of users in the guild needed to check whether everyone reacted)
-    const members = await client.guilds.cache.get(guildID).members.fetch()
+    const guilds = client.guilds.cache.map((guild) => guild.id)
+    guilds.forEach(async (guild) => {
+      const members = await client.guilds.cache.get(guild).members.fetch()
+    })
   } catch (error) {
     console.error('Something went wrong fetching the users: ', error)
   }

@@ -12,18 +12,18 @@ moment.locale('de')
  */
 async function listReminders(interaction, followUp = false) {
   // get all saved reminders
-  const jobs = schedule.scheduledJobs
+  const jobs = await dynamoDB.getAll(interaction.guild.id)
 
   // if there are no reminders saved
-  if (jobs && Object.keys(jobs).length === 0) {
+  if (jobs && jobs.length === 0) {
     if (followUp) return interaction.followUp(i18next.t('reminder.list.none_saved', { lng: interaction.locale }))
     else return interaction.reply(i18next.t('reminder.list.none_saved', { lng: interaction.locale }))
   }
 
   // else format a list of all reminders
   let result = i18next.t('reminder.list.reply', { lng: interaction.locale })
-  Object.entries(jobs).forEach(([name]) => {
-    result += `🗓️ ${name}\n`
+  jobs.forEach((job) => {
+    result += `🗓️ ${job.jobName}${job.message ? ' - ' + job.message : ''}\n`
   })
   if (followUp) return interaction.followUp(result)
   else return interaction.reply(result)
@@ -73,34 +73,45 @@ async function addReminder(interaction, args) {
   // convert to normal date object for node-scheduler and create jobName
   const date = reminderStart.toDate()
   const jobName = reminderStart.format('DD.MM.YYYY HH:mm')
+  let guild = interaction.guild.id
 
   // check if no reminder is saved on the same day at the same time
-  if (schedule.scheduledJobs[jobName] !== undefined) {
+  let id = `${guild} ${jobName}`
+  if (schedule.scheduledJobs[id] !== undefined) {
     return interaction.reply({
       content: i18next.t('errors.time.duplicate', { lng: interaction.locale }),
       ephemeral: true,
     })
   }
 
-  // check if the user wants to add a custom message
-  let customMessage = args[2] ? `\n${args[2]}` : ``
-
   // check if the user wants to mention someone specific
   let mention = args[3] ? args[3] : '@everyone'
+
+  // check if the user wants to add a custom message
+  let customMessage = ''
+  if (args[2]) {
+    if (getMessage(mention, args[2]).length > 100) {
+      return interaction.reply({
+        content: i18next.t('reminder.add.too_long', { lng: interaction.locale }),
+        ephemeral: true,
+      })
+    } else {
+      customMessage = args[2]
+    }
+  }
 
   //check if the user wants to set a specific channel
   let channel = args[4] && args[4].isTextBased() && !args[4].isVoiceBased() ? args[4] : interaction.channel
 
   // save the reminder in the dynamoDB
-  let text = `${mention} 🔔 **Reminder** 🔔${customMessage || ''}`
-  dynamoDB.create(jobName, date, text, channel.id)
+  dynamoDB.create(guild, jobName, date, channel.id, mention, customMessage)
 
   // save the reminder in the node-schedule
-  const job = schedule.scheduleJob(jobName, date, function () {
+  const job = schedule.scheduleJob(id, date, function () {
     console.info(`The job ${jobName} is now executed!`, moment())
-    dynamoDB.delete(jobName)
+    dynamoDB.delete(guild, jobName)
 
-    channel.send(text)
+    channel.send(getMessage(mention, customMessage))
   })
 
   // tell the user that adding the reminder was successful
@@ -120,20 +131,20 @@ async function addReminder(interaction, args) {
  * @param {interaction} interaction Discord interaction
  */
 async function removeReminderOptions(interaction) {
-  const jobs = schedule.scheduledJobs
+  const jobs = await dynamoDB.getAll(interaction.guild.id)
 
   // check if there are reminders saved at all
-  if (jobs && Object.keys(jobs).length === 0) {
+  if (jobs && jobs.length === 0) {
     return await interaction.reply(i18next.t('reminder.remove.none_saved', { lng: interaction.locale }))
   }
 
   // get all options to choose from
   let options = []
-  Object.entries(jobs).forEach(([name]) => {
+  jobs.forEach((job) => {
     options.push({
-      label: `${name}`,
-      description: '⬆️ diesen löschen ⬆️',
-      value: `${name}`,
+      label: `${job.jobName}`,
+      description: `${job.message || i18next.t('reminder.remove.no_message', { lng: interaction.Locale })}`,
+      value: `${job.jobName}`,
     })
   })
 
@@ -156,10 +167,10 @@ async function removeReminderOptions(interaction) {
  * @param {discord interaction} interaction interaction that contained the command
  */
 async function confirmDeleteAll(interaction) {
-  const jobs = schedule.scheduledJobs
+  const jobs = await dynamoDB.getAll(interaction.guild.id)
 
   // check if there are reminders saved at all
-  if (jobs && Object.keys(jobs).length === 0) {
+  if (jobs && jobs.length === 0) {
     return await interaction.reply(i18next.t('reminder.clear.none_saved', { lng: interaction.locale }))
   }
 
@@ -181,6 +192,10 @@ async function confirmDeleteAll(interaction) {
     components: [row],
     ephemeral: true,
   })
+}
+
+function getMessage(mention, customMessage) {
+  return `${mention} 🔔 **Reminder** 🔔\n${customMessage || ''}`
 }
 
 module.exports = {
@@ -302,25 +317,27 @@ module.exports = {
   setReminders(reminders, client) {
     // load reminders from dynamoDB into the node-scheduler
     reminders.forEach((reminder) => {
-      const job = schedule.scheduleJob(reminder.jobName, reminder.date, function () {
+      let id = `${reminder.guild} ${reminder.jobName}`
+      const job = schedule.scheduleJob(id, reminder.date, function () {
         console.info(`The job ${reminder.jobName} is now executed!`, moment())
-        dynamoDB.delete(reminder.jobName)
-        client.channels.cache.get(reminder.channel).send(reminder.customMessage)
+        dynamoDB.delete(reminder.guild, reminder.jobName)
+        client.channels.cache.get(reminder.channel).send(getMessage(mention, reminder.message))
       })
     })
   },
   async removeAllReminders(interaction) {
-    const jobs = schedule.scheduledJobs
+    const jobs = await dynamoDB.deleteAll(interaction.guild.id)
 
     // delete local reminders
     let result = i18next.t('reminder.clear.yes_reply', { lng: interaction.locale })
-    Object.entries(jobs).forEach(([name, job]) => {
-      result += `🗓️ ${name}\n`
-      job.cancel()
-    })
+    jobs.forEach((job) => {
+      result += `🗓️ ${job.jobName}${job.message ? ' - ' + job.message : ''}\n`
 
-    // delete reminders in dynamoDB
-    dynamoDB.deleteAll()
+      let id = `${interaction.guild.id} ${job.jobName}`
+      let localJob = schedule.scheduledJobs[id]
+
+      localJob.cancel()
+    })
 
     // tell the user that removing all reminders was successful
     return await interaction.update({ content: result, components: [] })
@@ -346,21 +363,23 @@ module.exports = {
   },
   async removeReminder(interaction) {
     let jobName
+    let guild = interaction.guild.id
 
     try {
       jobName = interaction.message.content.split('`')[1]
-      let job = schedule.scheduledJobs[jobName]
+      let id = `${guild} ${jobName}`
+      let localJob = schedule.scheduledJobs[id]
 
       // reminder could not be found
-      if (job === undefined) {
+      if (localJob === undefined) {
         await interaction.update(i18next.t('reminder.remove.none_saved', { lng: interaction.locale }))
         listReminders(interaction, true)
         return
 
         // reminder is deleted locally and in dynamoDB
       } else {
-        job.cancel()
-        dynamoDB.delete(jobName)
+        localJob.cancel()
+        dynamoDB.delete(guild, jobName)
       }
     } catch (e) {
       console.error(e)

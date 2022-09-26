@@ -35,12 +35,14 @@
     },
     "reminder": {
       "add": {
-        "reply": "Dein Reminder wurde registriert und wird am {{date}} um {{time}} Uhr in {{channel}} gesendet! 🙂"
+        "reply": "Dein Reminder wurde registriert und wird am {{date}} um {{time}} Uhr in {{channel}} gesendet! 🙂",
+        "too_long": "Tut mir leid, deine coole Nachricht ist zu lang 😢 Mach sie bitte kürzer als 100 Zeichen und versuch es nochmal.\nTipp: der Fehler kann auch an einer Invasion von Emoji liegen, Custom-Emoji und animierte Emoji brauchen mehr Platz als man ihnen ansieht 😉 Normale Emojis, das ist eure Zeit zu glänzen!"
       },
       "remove": {
-        "none_saved": "Ich konnte keinen passenden Reminder finden 🤔",
+        "none_saved": "Du hast gerade keinen Reminder gespeichert 🤔",
         "reply": "Der Reminder am {{date}} um {{time}} wurde erfolgreich gelöscht! 🗑️",
         "select": "Welche der folgenden Erinnerungen soll gelöscht werden?",
+        "no_message": "Keine Nachricht",
         "none_selected": "Keine ausgewählt",
         "confirm": "Bist du dir sicher, dass du die folgende Erinnerung löschen möchtest?\n`{{reminder}}`",
         "yes": "Ja, weg damit!",

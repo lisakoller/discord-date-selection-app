@@ -35,12 +35,14 @@
     },
     "reminder": {
       "add": {
-        "reply": "Your reminder has been registered and will be sent on {{date}} at {{time}} in {{channel}}! 🙂"
+        "reply": "Your reminder has been registered and will be sent on {{date}} at {{time}} in {{channel}}! 🙂",
+        "too_long": "I'm sorry, your awesome message is too long 😢 Please shorten it to less than 100 characters and try again.\nHint: the error can also be caused by an abundance of emojis, custom emojis and animated emojis need more space than you might think 😉 Regular emojis, it's your time to shine!"
       },
       "remove": {
-        "none_saved": "I couldn't find a fitting reminder 🤔",
+        "none_saved": "There're currently no reminders saved 🤔",
         "reply": "The reminder on the {{date}} at {{time}} was successfully deleted! 🗑️",
         "select": "Which of the following reminders shall be deleted?",
+        "no_message": "No message",
         "none_selected": "None selected",
         "confirm": "Are you sure you want to delete the following reminder?\n`{{reminder}}`",
         "yes": "Yes, throw it away!",

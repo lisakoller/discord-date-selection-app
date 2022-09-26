@@ -124,7 +124,7 @@ function getBasicEmbed(options, author, title, message, time, image, locale) {
     .addFields(getBasicEmbedFields(options, locale))
     .setTimestamp()
     .setFooter({
-      text: 'Caley Version 2.2',
+      text: 'Caley Version 2.3',
       iconURL: botIconUrl,
     })
 }
@@ -178,7 +178,7 @@ function removeUser(value, user) {
  * @param {discord message object} sentMessage message to get the most voted reactions from
  * @returns formatted string of most reacted options
  */
-function getTopAnswer(sentMessage, reaction, locale) {
+function getTopAnswer(sentMessage, reaction, authorName, locale) {
   let reactions = sentMessage.reactions.cache //.array()
 
   // how often was every emoji selected/reacted? (includes the bot itself)
@@ -248,8 +248,8 @@ function getTopAnswer(sentMessage, reaction, locale) {
     counts.filter((entry) => entry.count === max).length === 1
   ) {
     console.info(`Yay! All ${memberCount} members have voted!`)
-    const owner = guild.members.cache.get(guild.ownerId)
-    owner.send(i18next.t('session.finished_message', { memberCount: memberCount, lng: locale }))
+    const author = guild.members.cache.find((member) => member.nickname === authorName)
+    author.send(i18next.t('session.finished_message', { memberCount: memberCount, lng: locale }))
   }
 
   // only return the result if there is at least one entry
@@ -278,7 +278,7 @@ async function updateFields(receivedEmbed, sentMessage, reaction, user, type, lo
 
       // the first field contains the top answers that need to be updated
       if (index === 0) {
-        o.value = getTopAnswer(sentMessage, reaction, locale)
+        o.value = getTopAnswer(sentMessage, reaction, receivedEmbed.author.name, locale)
 
         // the other fields contain a list of users that reacted with that emoji
         // index-2 because there are 2 "standard" fields that need to be subtracted (intro + blank space; see basicEmbedFields)
