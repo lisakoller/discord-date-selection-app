@@ -12,21 +12,21 @@
     "errors": {
       "general": "Da hat etwas nicht funktioniert! 🤯",
       "date": {
-        "format": "Ich kann mit dem Datum `{{date}}` leider nichts anfangen, tut mir leid {{nickname}} 🤔\nHast es auch ganz sicher in dem Format eingegeben: `DD.MM.YYYY`, also zum Beispiel `13.05.2021`?",
+        "format": "Ich kann mit dem Datum `{{date}}` leider nichts anfangen, tut mir leid {{displayName}} 🤔\nHast es auch ganz sicher in dem Format eingegeben: `DD.MM.YYYY`, also zum Beispiel `13.05.2021`?",
         "past": "Hey, Zeitreisender! Ein Datum in der Vergangenheit macht nicht so viel Sinn, oder? 😉 Ich tu mal so als hättest du das nicht geschrieben 😛",
         "future": "Eine gute Planung ist Gold wert, aber mehr als zwei {{futureUnit}} in die Zukunft muss man nun wirklich nicht planen, oder? 😉 Gib bitte ein zeitlich näheres Datum an 🙂",
         "months": "Monate",
         "weeks": "Wochen"
       },
       "time": {
-        "format": "Ich kann mit der Uhrzeit `{{time}}` leider nichts anfangen, tut mir leid {{nickname}} 🤔\nHast es auch ganz sicher in dem Format eingegeben: `HH:mm`, also zum Beispiel `18:30`? (wir verwenden 24 Stunden wie zivilisierte Menschen)",
+        "format": "Ich kann mit der Uhrzeit `{{time}}` leider nichts anfangen, tut mir leid {{displayName}} 🤔\nHast es auch ganz sicher in dem Format eingegeben: `HH:mm`, also zum Beispiel `18:30`? (wir verwenden 24 Stunden wie zivilisierte Menschen)",
         "future": "Die Uhrzeit muss schon in der Zukunft liegen, was hat ein Reminder sonst für einen Sinn? 🙃\nEventuell ist die Uhrzeit auch zu knapp an der jetzigen Uhrzeit. Für ein paar Sekunden hat ein Reminder auch nicht so viel Sinn, oder? 😛",
         "duplicate": "An genau **diesem** Tag zu genau **dieser** Uhrzeit gibt es schon einen Reminder, sorry. Verschieb ihn doch um eine Minute oder lösche zuerst den anderen mit `/erinnerung löschen` 😉"
       }
     },
     "dice": {
-      "countdown1": "{{nickname}} wirft den Würfel des Schicksals 🎲 ...",
-      "countdown2": "{{nickname}} beobachtet ihn ganz genau 👀 ...",
+      "countdown1": "{{displayName}} wirft den Würfel des Schicksals 🎲 ...",
+      "countdown2": "{{displayName}} beobachtet ihn ganz genau 👀 ...",
       "countdown3": "Und das Ergebnis ist..."
     },
     "random": {

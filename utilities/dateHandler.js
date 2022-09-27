@@ -142,7 +142,7 @@ module.exports = {
           reject(
             i18next.t('errors.date.format', {
               date: inputString,
-              nickname: interaction.member.nickname,
+              displayName: interaction.member.displayName,
               lng: interaction.locale,
             })
           )

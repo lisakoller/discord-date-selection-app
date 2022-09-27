@@ -12,21 +12,21 @@
     "errors": {
       "general": "Something didn't work out there! 🤯",
       "date": {
-        "format": "I don't know what to do with the date `{{date}}`, I'm terribly sorry {{nickname}} 🤔\nAre you sure you used the correct format: `DD.MM.YYYY`, for example `13.05.2021`?",
+        "format": "I don't know what to do with the date `{{date}}`, I'm terribly sorry {{displayName}} 🤔\nAre you sure you used the correct format: `DD.MM.YYYY`, for example `13.05.2021`?",
         "past": "Yo, time traveler! A date in the past doesn't really make any sense, does it? 😉 I'll pretend you didn't write that 😛",
         "future": "Good planning is worth its weight in gold, but planning more than two {{futureUnit}} ahead is not really necessary, is it? 😉 Please use a date closer to today 🙂",
         "months": "months",
         "weeks": "weeks"
       },
       "time": {
-        "format": "I don't know what to do with the time `{{time}}`, I'm terribly sorry {{nickname}} 🤔\nAre you sure you used the correct format: `HH:mm`, for example `18:30`? (we're using 24 hour format like civilized people)",
+        "format": "I don't know what to do with the time `{{time}}`, I'm terribly sorry {{displayName}} 🤔\nAre you sure you used the correct format: `HH:mm`, for example `18:30`? (we're using 24 hour format like civilized people)",
         "future": "The set time has to be in the future, why would you use a reminder otherwise? 🙃\nOr maybe, just maybe, the time is too close to the current time. You don't need a reminder for a few seconds, do you? 😛 (I really hope you don't)",
         "duplicate": "At precisely **that** day at **that** time there's already a reminder saved, sorry. Just postpone it for a minute or delete the other one with `/reminder delete` 😉"
       }
     },
     "dice": {
-      "countdown1": "{{nickname}} is tempting fate 🎲 ...",
-      "countdown2": "{{nickname}} is watching the dice closely 👀 ...",
+      "countdown1": "{{displayName}} is tempting fate 🎲 ...",
+      "countdown2": "{{displayName}} is watching the dice closely 👀 ...",
       "countdown3": "And the result is..."
     },
     "random": {

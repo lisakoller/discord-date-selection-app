@@ -38,15 +38,15 @@ module.exports = {
 
       // send the result with a countdown
       await interaction.reply(
-        i18next.t('dice.countdown1', { nickname: interaction.member.nickname, lng: interaction.locale })
+        i18next.t('dice.countdown1', { displayName: interaction.member.displayName, lng: interaction.locale })
       )
       await setTimeoutPromise(2000)
       await interaction.followUp(
-        i18next.t('dice.countdown2', { nickname: interaction.member.nickname, lng: interaction.locale })
+        i18next.t('dice.countdown2', { displayName: interaction.member.displayName, lng: interaction.locale })
       )
       await setTimeoutPromise(2000)
       await interaction.followUp(
-        i18next.t('dice.countdown3', { nickname: interaction.member.nickname, lng: interaction.locale })
+        i18next.t('dice.countdown3', { displayName: interaction.member.displayName, lng: interaction.locale })
       )
       await setTimeoutPromise(4000)
       await interaction.followUp(`**${result}**! 🎉`)

@@ -55,7 +55,7 @@ async function addReminder(interaction, inputDate, inputTime, inputMessage, inpu
   if (!time.isValid()) {
     return interaction.reply({
       content: i18next.t('errors.time.format', {
-        nickname: interaction.member.nickname,
+        displayName: interaction.member.displayName,
         time: inputTime,
         lng: interaction.locale,
       }),

@@ -248,8 +248,12 @@ function getTopAnswer(sentMessage, reaction, authorName, locale) {
     counts.filter((entry) => entry.count === max).length === 1
   ) {
     console.info(`Yay! All ${memberCount} members have voted!`)
-    const author = guild.members.cache.find((member) => member.nickname === authorName)
-    author.send(i18next.t('session.finished_message', { memberCount: memberCount, lng: locale }))
+    try {
+      const author = guild.members.cache.find((member) => member.displayName === authorName)
+      author.send(i18next.t('session.finished_message', { memberCount: memberCount, lng: locale }))
+    } catch (err) {
+      console.error('Error sending the author a DM: ', err)
+    }
   }
 
   // only return the result if there is at least one entry
@@ -465,7 +469,7 @@ module.exports = {
     let message = interaction.options.getString('message')
     let image = interaction.options.getAttachment('image')
     let author = {
-      name: interaction.member.nickname,
+      name: interaction.member.displayName,
       iconURL: interaction.member.displayAvatarURL(),
     }
 
