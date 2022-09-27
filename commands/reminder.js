@@ -35,36 +35,40 @@ async function listReminders(interaction, followUp = false) {
  * @param {array} args input by the user
  * @returns a message that is sent to the channel
  */
-async function addReminder(interaction, args) {
+async function addReminder(interaction, inputDate, inputTime, inputMessage, inputMention, inputChannel, inputTimezone) {
   let reminderDay
   let reminderTime
 
   try {
     // try to convert the input to a valid date
-    reminderDay = await dateHandler.convertInputToDate(args[0], false, 'weeks', interaction)
+    reminderDay = await dateHandler.convertInputToDate(inputDate, false, 'weeks', interaction)
   } catch (errorMessage) {
     return interaction.reply({ content: errorMessage, ephemeral: true })
   }
 
   // try to convert the input to a valid time
-  const inputTime = moment.tz(`${reminderDay.format('DD.MM.YYYY')} ${args[1]}`, 'DD.MM.YYYY HH:mm', 'Europe/Vienna')
-  if (!inputTime.isValid()) {
+  const time = moment.tz(
+    `${reminderDay.format('DD.MM.YYYY')} ${inputTime}`,
+    'DD.MM.YYYY HH:mm',
+    inputTimezone ? inputTimezone : 'Europe/Vienna'
+  )
+  if (!time.isValid()) {
     return interaction.reply({
       content: i18next.t('errors.time.format', {
         nickname: interaction.member.nickname,
-        time: args[1],
+        time: inputTime,
         lng: interaction.locale,
       }),
       ephemeral: true,
     })
 
     // check if the provided time is in the past
-  } else if (reminderDay.isSame(moment(), 'day') && inputTime.isSameOrBefore(moment())) {
+  } else if (reminderDay.isSame(moment(), 'day') && time.isSameOrBefore(moment())) {
     return interaction.reply({ content: i18next.t('errors.time.future', { lng: interaction.locale }), ephemeral: true })
 
     // time is okay
   } else {
-    reminderTime = inputTime
+    reminderTime = time
   }
 
   // combine day and time moment objects
@@ -85,26 +89,27 @@ async function addReminder(interaction, args) {
   }
 
   // check if the user wants to mention someone specific
-  let mention = args[3] ? args[3] : '@everyone'
+  let mention = inputMention ? inputMention : '@everyone'
 
   // check if the user wants to add a custom message
   let customMessage = ''
-  if (args[2]) {
-    if (getMessage(mention, args[2]).length > 100) {
+  if (inputMessage) {
+    if (getMessage(mention, inputMessage).length > 100) {
       return interaction.reply({
         content: i18next.t('reminder.add.too_long', { lng: interaction.locale }),
         ephemeral: true,
       })
     } else {
-      customMessage = args[2]
+      customMessage = inputMessage
     }
   }
 
   //check if the user wants to set a specific channel
-  let channel = args[4] && args[4].isTextBased() && !args[4].isVoiceBased() ? args[4] : interaction.channel
+  let channel =
+    inputChannel && inputChannel.isTextBased() && !inputChannel.isVoiceBased() ? inputChannel : interaction.channel
 
   // save the reminder in the dynamoDB
-  dynamoDB.create(guild, jobName, date, channel.id, mention, customMessage)
+  dynamoDB.create(guild, jobName, date, channel.id, mention.toString(), customMessage)
 
   // save the reminder in the node-schedule
   const job = schedule.scheduleJob(id, date, function () {
@@ -280,6 +285,103 @@ module.exports = {
             })
             .setRequired(false)
         )
+        .addStringOption((option) =>
+          option
+            .setName('timezone')
+            .setNameLocalizations({
+              de: 'zeitzone',
+            })
+            .setDescription('Timezone that you use. (Default: CEST)')
+            .setDescriptionLocalizations({
+              de: 'Deine Zeitzone. (Standard: CEST)',
+            })
+            .setRequired(false)
+            .addChoices(
+              {
+                name: 'America/Los Angeles (GMT-8)',
+                name_localizations: { de: 'Amerika/Los Angeles (GMT-8)' },
+                value: 'America/Los_Angeles',
+              },
+              {
+                name: 'America/Denver (GMT-7)',
+                name_localizations: { de: 'Amerika/Denver (GMT-7)' },
+                value: 'America/Denver',
+              },
+              {
+                name: 'America/Chicago (GMT-6)',
+                name_localizations: { de: 'Amerika/Chicago (GMT-6)' },
+                value: 'America/Chicago',
+              },
+              {
+                name: 'America/New York (GMT-5)',
+                name_localizations: { de: 'Amerika/New York (GMT-5)' },
+                value: 'America/New_York',
+              },
+              {
+                name: 'America/Sao Paulo (GMT-3)',
+                name_localizations: { de: 'Amerika/São Paulo (GMT-3)' },
+                value: 'America/Sao_Paulo',
+              },
+              {
+                name: 'Atlantic/Reykjavik (GMT+0)',
+                name_localizations: { de: 'Atlantik/Reykjavik (GMT+0)' },
+                value: 'Atlantic/Reykjavik',
+              },
+              {
+                name: 'Europe/London (GMT+1)',
+                name_localizations: { de: 'Europa/London (GMT+1)' },
+                value: 'Europe/London',
+              },
+              {
+                name: 'Europe/Vienna (GMT+2)',
+                name_localizations: { de: 'Europa/Wien (GMT+2)' },
+                value: 'Europe/Vienna',
+              },
+              {
+                name: 'Europe/Moscow (GMT+3)',
+                name_localizations: { de: 'Europa/Moskau (GMT+3)' },
+                value: 'Europe/Moscow',
+              },
+              { name: 'Asia/Dubai (GMT+4)', name_localizations: { de: 'Asien/Dubai (GMT+4)' }, value: 'Asia/Dubai' },
+              {
+                name: 'Indian/Maldives (GMT+5)',
+                name_localizations: { de: 'Indien/Malediven (GMT+5)' },
+                value: 'Indian/Maldives',
+              },
+              {
+                name: 'Asia/Mumbai (GMT+5:30)',
+                name_localizations: { de: 'Asien/Mumbai (GMT+5:30)' },
+                value: 'Asia/Colombo',
+              },
+              { name: 'Asia/Dhaka (GMT+6)', name_localizations: { de: 'Asien/Dhaka (GMT+6)' }, value: 'Asia/Dhaka' },
+              {
+                name: 'Asia/Bangkok (GMT+7)',
+                name_localizations: { de: 'Asien/Bangkok (GMT+7)' },
+                value: 'Asia/Bangkok',
+              },
+              {
+                name: 'Asia/Shanghai (GMT+8)',
+                name_localizations: { de: 'Asien/Shanghai (GMT+8)' },
+                value: 'Asia/Shanghai',
+              },
+              { name: 'Asia/Tokyo (GMT+9)', name_localizations: { de: 'Asien/Tokio (GMT+9)' }, value: 'Asia/Tokyo' },
+              {
+                name: 'Australia/Sydney (GMT+10)',
+                name_localizations: { de: 'Australien/Sydney (GMT+10)' },
+                value: 'Australia/Sydney',
+              },
+              {
+                name: 'Pacific/Guadalcanal (GMT+11)',
+                name_localizations: { de: 'Pazifik/Guadalcanal (GMT+11)' },
+                value: 'Pacific/Guadalcanal',
+              },
+              {
+                name: 'Pacific/Auckland (GMT+12)',
+                name_localizations: { de: 'Pazifik/Auckland (GMT+12)' },
+                value: 'Pacific/Auckland',
+              }
+            )
+        )
     )
     .addSubcommand((subcommand) =>
       subcommand
@@ -321,7 +423,7 @@ module.exports = {
       const job = schedule.scheduleJob(id, reminder.date, function () {
         console.info(`The job ${reminder.jobName} is now executed!`, moment())
         dynamoDB.delete(reminder.guild, reminder.jobName)
-        client.channels.cache.get(reminder.channel).send(getMessage(mention, reminder.message))
+        client.channels.cache.get(reminder.channel).send(getMessage(reminder.mention, reminder.message))
       })
     })
   },
@@ -400,13 +502,15 @@ module.exports = {
     // check what the user wants to do
     if (interaction.options.getSubcommand() === 'add') {
       // create a new reminder
-      addReminder(interaction, [
+      addReminder(
+        interaction,
         interaction.options.getString('date'),
         interaction.options.getString('time'),
         interaction.options.getString('message'),
         interaction.options.getMentionable('mention'),
         interaction.options.getChannel('channel'),
-      ])
+        interaction.options.getString('timezone')
+      )
     } else if (interaction.options.getSubcommand() === 'remove') {
       // delete a single reminder
       removeReminderOptions(interaction)
