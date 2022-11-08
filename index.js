@@ -260,10 +260,13 @@ async function handleReactions(reaction, user, type) {
   // Now the message and reaction have been cached and are fully available
 
   const author = fullmessage.author
-  const footer = fullmessage.embeds[0].footer
-  const desc = fullmessage.embeds[0].description
+  const footer = fullmessage.embeds.length > 0 ? fullmessage.embeds[0].footer : undefined
+  const desc = fullmessage.embeds.length > 0 ? fullmessage.embeds[0].description : undefined
 
-  // check if the message is a session message (where reactions need to be handled)
+  // just a normal message without embeds
+  if(!footer || !desc) return
+
+  // check if the message with embeds is a session message (where reactions need to be handled)
   if (author.bot === true && author.id === clientID && footer.text.includes('Caley')) {
     const command = client.commands.get('session')
     const locale = desc.includes('Starting') ? 'en' : 'de'
