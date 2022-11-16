@@ -1,7 +1,7 @@
 require('dotenv').config()
 const fs = require('fs')
 const path = require('node:path')
-const { Client, IntentsBitField, Partials, Collection, ActivityType } = require('discord.js')
+const { Client, IntentsBitField, Partials, Collection, ActivityType, Events } = require('discord.js')
 const dynamoDB = require('./utilities/dynamoDB')
 const i18next = require('i18next')
 const en = require('./utilities/locales/en.json')
@@ -221,6 +221,36 @@ client.on('ready', async () => {
 
   // set the activity of the bot that is displayed under it
   client.user.setActivity(`/`, { type: ActivityType.Listening })
+})
+
+client.on(Events.ShardError, (error, id) => {
+  console.info(`Client ready since: ${client.readyAt}`)
+  console.error(`A websocket connection (Shard ${id}) encountered an error: ${error}`)
+})
+
+client.on(Events.ShardDisconnect, (event, id) => {
+  console.info(`Shard ${id} is disconnected.`)
+})
+
+client.on(Events.ShardReady, (id) => {
+  console.info(`Shard ${id} is ready.`)
+})
+
+client.on(Events.ShardReconnecting, (id) => {
+  console.info(`Shard ${id} is reconnecting...`)
+})
+
+client.on(Events.ShardResume, (id) => {
+  console.info(`Shard ${id} is resuming.`)
+})
+
+client.on(Events.Error, error => {
+  console.error(`Client encountered an error: ${error}`)
+})
+
+process.on('unhandledRejection', error => {
+  console.info(`Client ready since: ${client.readyAt}`)
+  console.error(`Unhandled promise rejection: ${error}`)
 })
 
 client.login(token)
