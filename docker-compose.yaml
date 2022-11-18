@@ -3,5 +3,5 @@ services:
   caley:
     container_name: caley
     restart: unless-stopped
-    command: ["./wait-for-it.sh", "-t", "0", "www.google.com:80", "--strict", "--", "node", "index.js"]
+    # command: ["./wait-for-it.sh", "-t", "0", "www.google.com:80", "--strict", "--", "node", "index.js"]
     build: .
