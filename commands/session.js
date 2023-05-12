@@ -4,9 +4,9 @@ const dateHandler = require('../utilities/dateHandler')
 const moment = require('moment')
 moment.locale('de')
 
-const singlePandaUrl = 'https://assets.lisakoller.at/discord/single-panda.jpg'
-const teamPandaUrl = 'https://assets.lisakoller.at/discord/team-panda.jpg'
-const botIconUrl = 'https://assets.lisakoller.at/discord/calendar.jpg'
+const singlePandaUrl = 'https://assets.lisakoller.dev/discord/single-panda.jpg'
+const teamPandaUrl = 'https://assets.lisakoller.dev/discord/team-panda.jpg'
+const botIconUrl = 'https://assets.lisakoller.dev/discord/calendar.jpg'
 
 const emojiList = [
   '🇦',
