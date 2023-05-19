@@ -1,5 +1,5 @@
 const i18next = require('i18next')
-const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, SelectMenuBuilder } = require('discord.js')
+const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder } = require('discord.js')
 const dateHandler = require('../utilities/dateHandler')
 const dynamoDB = require('../utilities/dynamoDB')
 const schedule = require('node-schedule')
@@ -154,7 +154,7 @@ async function removeReminderOptions(interaction) {
   })
 
   const row = new ActionRowBuilder().addComponents(
-    new SelectMenuBuilder()
+    new StringSelectMenuBuilder()
       .setCustomId('removeReminderOptions')
       .setPlaceholder(i18next.t('reminder.remove.none_selected', { lng: interaction.locale }))
       .addOptions(options)

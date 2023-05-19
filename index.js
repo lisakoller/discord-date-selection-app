@@ -96,7 +96,7 @@ client.on('interactionCreate', async (interaction) => {
 
 // react to select menus
 client.on('interactionCreate', async (interaction) => {
-  if (!interaction.isSelectMenu()) return
+  if (!interaction.isStringSelectMenu()) return
 
   try {
     if (interaction.customId === 'removeReminderOptions') {
