@@ -16,7 +16,6 @@
     "moment-timezone": "^0.5.43",
     "node-schedule": "^2.1.1"
   },
-  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node ."

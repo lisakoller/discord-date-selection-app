@@ -8,6 +8,8 @@ COPY package.json /usr/src/bot
 
 # COPY wait-for-it.sh /usr/src/bot
 
+# Update npm and install packages
+RUN npm i -g npm
 RUN npm install
 
 COPY . /usr/src/bot
