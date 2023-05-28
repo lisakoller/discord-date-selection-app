@@ -55,9 +55,9 @@ module.exports = {
         .setNameLocalizations({
           de: 'erklärung',
         })
-        .setDescription('Display an explanation what each emoji means.')
+        .setDescription('Display an explanation what each emoji means. (default: false)')
         .setDescriptionLocalizations({
-          de: 'Eklärung anzeigen, wofür jedes Emoji steht.',
+          de: 'Eklärung anzeigen, wofür jedes Emoji steht. (Standard: False',
         })
         .setRequired(false)
     )
@@ -81,7 +81,7 @@ module.exports = {
         })
         .setDescription('Which set of emojis do you want to use? (default: 👍👎🤷)')
         .setDescriptionLocalizations({
-          de: 'Welche Emojis sollen verwendet werden? (default: 👍👎🤷)',
+          de: 'Welche Emojis sollen verwendet werden? (Standard: 👍👎🤷)',
         })
         .setRequired(false)
         .addChoices(
