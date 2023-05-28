@@ -11,6 +11,7 @@ Just my first try making a bot for Discord. You can roll a dice, let fate choose
 - `random`
 - `reminder`
 - `session`
+- `vote`
 
 ## Gallery
 

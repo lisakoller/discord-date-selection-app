@@ -70,6 +70,10 @@
       "message": "Wann würde es euch am besten passen?",
       "top_entries": "Aktuell am häufigsten genannt",
       "finished_message": "Ziel erreicht! 🙂\nEs haben alle {{memberCount}} bei einer Umfrage für den selben Tag gestimmt! Überprüf nochmal ob es mehrere Tage betrifft und entscheide dich in dem Fall für einen! 🙂"
+    },
+    "vote": {
+      "suggestion": "__**Bitte abstimmen:**__ {{text}}",
+      "suggestion_explanation": "__**Bitte abstimmen:**__ {{text}}\n\nJa: {{yes}}\nNein: {{no}}\nEgal: {{maybe}}"
     }
   }
 }

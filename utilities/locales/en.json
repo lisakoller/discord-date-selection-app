@@ -70,6 +70,10 @@
       "message": "Which days would suit you best?",
       "top_entries": "Currently mentioned most often",
       "finished_message": "Goal achieved! 🙂\nAll {{memberCount}} members have voted for the same day at your poll! Check if there are multiple top days and choose one in that case! 🙂"
+    },
+    "vote": {
+      "suggestion": "__**Please vote:**__ {{text}}",
+      "suggestion_explanation": "__**Please vote:**__ {{text}}\n\nYes: {{yes}}\nNo: {{no}}\nEither is fine: {{maybe}}"
     }
   }
 }
