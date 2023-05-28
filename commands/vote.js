@@ -57,7 +57,7 @@ module.exports = {
         })
         .setDescription('Display an explanation what each emoji means. (default: false)')
         .setDescriptionLocalizations({
-          de: 'Eklärung anzeigen, wofür jedes Emoji steht. (Standard: False',
+          de: 'Eklärung anzeigen, wofür jedes Emoji steht. (Standard: False)',
         })
         .setRequired(false)
     )
